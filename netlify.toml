@@ -1,0 +1,31 @@
+# Netlify build configuration for Meera's - The Beauty Saga
+
+[build]
+  # Use the default Next.js build command
+  command = "npm run build"
+  # Directory with published site (Next.js default)
+  publish = ".next"
+
+[build.environment]
+  # Node.js version
+  NODE_VERSION = "20"
+  # Enable modern Node.js features for Next.js
+  NEXT_TELEMETRY_DISABLED = "1"
+  # Asset prefix for static files (_next/static)
+  ASSET_PREFIX = "/_next/static"
+
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Content-Type = "text/css; charset=utf-8"
+
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Content-Type = "text/javascript; charset=utf-8"
+
+[[headers]]
+  for = "/*.woff2"
+  [headers.values]
+    Content-Type = "font/woff2"
+    Access-Control-Allow-Origin = "*"

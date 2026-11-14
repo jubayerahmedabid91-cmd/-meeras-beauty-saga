@@ -1,26 +1,178 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* ── Official Meera's palette ─────────────────────────────────────── */
+  --color-cream: #faf7f5;
+  --color-pastel-pink: #fff0f3;
+  --color-charcoal: #2e2e2e;
+  --color-rose-gold: #b76e79;
+  --color-rose-gold-dark: #8f4a55;
+  --color-rose-gold-light: #e8c4cb;
+  --color-blush: #fbe4e9;
+  --color-ink: #1a1a1a;
+  --color-muted: #6b6b6b;
+
+  /* ── Typography ───────────────────────────────────────────────────── */
+  --font-heading: "Playfair Display", Georgia, "Times New Roman", serif;
+  --font-body: "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* ── Radii / shadows ──────────────────────────────────────────────── */
+  --radius-card: 1.25rem;
+  --shadow-soft: 0 8px 30px rgba(46, 46, 46, 0.06);
+  --shadow-card: 0 12px 40px rgba(46, 46, 46, 0.08);
+  --shadow-lift: 0 20px 60px rgba(46, 46, 46, 0.12);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background-color: var(--color-cream);
+    color: var(--color-charcoal);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
+    font-family: var(--font-heading);
+    color: var(--color-charcoal);
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background: var(--color-rose-gold-light);
+    color: var(--color-charcoal);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-rose-gold);
+    outline-offset: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* ── Buttons ─────────────────────────────────────────────────────── */
+  .btn,
+  .btn-primary,
+  .btn-outline,
+  .btn-dark,
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-primary {
+    @apply bg-rose-gold text-white hover:bg-rose-gold-dark hover:shadow-card active:scale-[0.98];
+  }
+
+  .btn-outline {
+    @apply border border-rose-gold/40 bg-transparent text-charcoal hover:border-rose-gold hover:bg-rose-gold/5;
+  }
+
+  .btn-dark {
+    @apply bg-charcoal text-white hover:bg-ink hover:shadow-card active:scale-[0.98];
+  }
+
+  .btn-ghost {
+    @apply text-charcoal hover:bg-rose-gold/10;
+  }
+
+  /* ── Cards ───────────────────────────────────────────────────────── */
+  .card {
+    @apply rounded-[var(--radius-card)] border border-charcoal/5 bg-white shadow-soft transition-all duration-300;
+  }
+
+  .card-hover {
+    @apply hover:-translate-y-1 hover:shadow-card;
+  }
+
+  /* ── Forms ───────────────────────────────────────────────────────── */
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-charcoal;
+  }
+
+  .field-input {
+    @apply w-full rounded-xl border border-charcoal/10 bg-white px-4 py-2.5 text-sm text-charcoal placeholder:text-muted/70 transition focus:border-rose-gold focus:ring-2 focus:ring-rose-gold/20 focus:outline-none;
+  }
+
+  /* ── Eyebrow / section label ─────────────────────────────────────── */
+  .eyebrow {
+    @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-gold;
+  }
+
+  .eyebrow::before {
+    content: "";
+    display: inline-block;
+    width: 2rem;
+    height: 1px;
+    background: var(--color-rose-gold);
+  }
+
+  /* ── Decorative geometric pattern (thin rose-gold arches/circles) ── */
+  .pattern-surface {
+    background-color: var(--color-cream);
+    background-image:
+      radial-gradient(circle at 12% 20%, rgba(183, 110, 121, 0.05) 0, transparent 22%),
+      radial-gradient(circle at 88% 80%, rgba(183, 110, 121, 0.05) 0, transparent 22%),
+      repeating-linear-gradient(90deg, rgba(183, 110, 121, 0.025) 0 1px, transparent 1px 90px),
+      repeating-linear-gradient(0deg, rgba(183, 110, 121, 0.02) 0 1px, transparent 1px 90px);
+  }
+
+  .pattern-pink {
+    background-color: var(--color-pastel-pink);
+    background-image:
+      radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.5) 0, transparent 25%),
+      repeating-linear-gradient(90deg, rgba(183, 110, 121, 0.04) 0 1px, transparent 1px 80px),
+      repeating-linear-gradient(0deg, rgba(183, 110, 121, 0.03) 0 1px, transparent 1px 80px);
+  }
+}
+
+.container-site {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 80rem;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 768px) {
+  .container-site {
+    padding-inline: 2rem;
+  }
+}
+
+/* Keyframes used by client components */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

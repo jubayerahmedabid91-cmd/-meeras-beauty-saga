@@ -34,7 +34,7 @@ export async function PUT(request: Request) {
   }
 
   await prisma.user.update({
-    where: { id: user.id },
+    where: { id: (session.user as { id: string }).id },
     data: {
       passwordHash: await bcrypt.hash(newPassword, 12),
     },

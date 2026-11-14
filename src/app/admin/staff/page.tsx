@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Pencil } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/badge";
+import { DeleteStaffButton } from "@/components/admin/delete-staff-button";
 
 export const metadata: Metadata = { title: "Staff" };
 
@@ -48,7 +49,7 @@ export default async function AdminStaffPage({
         <EmptyState title="No staff" description="Add staff members to your team." />
       ) : (
         <div className="card overflow-x-auto">
-          <table className="w-full min-w-[680px] text-sm">
+          <table className="w-full min-w-[820px] text-sm">
             <thead>
               <tr className="border-b border-charcoal/10 text-left text-xs uppercase tracking-wider text-muted">
                 <th className="p-4">Name</th>
@@ -56,6 +57,7 @@ export default async function AdminStaffPage({
                 <th className="p-4">Contact</th>
                 <th className="p-4">Bookings</th>
                 <th className="p-4">Status</th>
+                <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-charcoal/5">
@@ -65,8 +67,11 @@ export default async function AdminStaffPage({
                     <Link href={`/admin/staff/${s.id}`} className="font-semibold text-rose-gold hover:underline">
                       {s.firstName} {s.lastName}
                     </Link>
+                    <p className="text-xs text-muted">{s.jobTitle}</p>
                   </td>
-                  <td className="p-4">{s.jobTitle}</td>
+                  <td className="p-4">
+                    <Badge tone="outline">{s.user.role}</Badge>
+                  </td>
                   <td className="p-4">
                     <p>{s.user.email}</p>
                     <p className="text-xs text-muted">{s.phone ?? "No phone"}</p>
@@ -74,6 +79,18 @@ export default async function AdminStaffPage({
                   <td className="p-4">{s._count.bookings}</td>
                   <td className="p-4">
                     <Badge tone={s.isActive ? "rose" : "outline"}>{s.isActive ? "Active" : "Inactive"}</Badge>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center justify-end gap-2">
+                      <Link
+                        href={`/admin/staff/${s.id}/edit`}
+                        className="inline-flex items-center gap-1 rounded-lg border border-charcoal/15 px-2.5 py-1 text-xs font-semibold text-charcoal transition hover:border-rose-gold hover:text-rose-gold"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        Edit
+                      </Link>
+                      <DeleteStaffButton staffId={s.id} name={`${s.firstName} ${s.lastName}`} />
+                    </div>
                   </td>
                 </tr>
               ))}

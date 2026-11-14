@@ -12,7 +12,9 @@ const schema = z.object({
   phone: z.string().max(30).optional(),
   jobTitle: z.string().min(2).max(100),
   password: z.string().min(8).max(100),
+  role: z.enum(["STAFF", "RECEPTIONIST", "MANAGER", "ADMIN", "OWNER"]).default("STAFF"),
   commissionRate: z.number().min(0).max(100).optional(),
+  isActive: z.boolean().optional(),
 });
 
 const updateSchema = z.object({
@@ -22,6 +24,7 @@ const updateSchema = z.object({
   phone: z.string().max(30).optional(),
   jobTitle: z.string().min(2).max(100).optional(),
   password: z.string().min(8).max(100).optional(),
+  role: z.enum(["STAFF", "RECEPTIONIST", "MANAGER", "ADMIN", "OWNER"]).optional(),
   commissionRate: z.number().min(0).max(100).optional(),
   isActive: z.boolean().optional(),
 });
@@ -55,7 +58,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid staff data." }, { status: 400 });
   }
 
-  const { firstName, lastName, email, phone, jobTitle, password, commissionRate } = parsed.data;
+  const { firstName, lastName, email, phone, jobTitle, password, role: newRole, commissionRate, isActive } = parsed.data;
   const normalizedEmail = email.toLowerCase().trim();
 
   const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
@@ -70,7 +73,8 @@ export async function POST(request: Request) {
       email: normalizedEmail,
       phone: phone || null,
       passwordHash,
-      role: "STAFF",
+      role: newRole,
+      isActive: isActive ?? true,
       staff: {
         create: {
           firstName,
@@ -78,6 +82,7 @@ export async function POST(request: Request) {
           jobTitle,
           phone: phone || null,
           commissionRate: commissionRate ?? 0,
+          isActive: isActive ?? true,
         },
       },
     },
@@ -104,31 +109,46 @@ export async function PUT(request: Request) {
   }
 
   const updates = parsed.data;
-  const updateData: Record<string, unknown> = {};
 
-  if (updates.firstName) updateData.firstName = updates.firstName;
-  if (updates.lastName) updateData.lastName = updates.lastName;
-  if (updates.jobTitle) updateData.jobTitle = updates.jobTitle;
-  if (updates.phone !== undefined) updateData.phone = updates.phone;
-  if (updates.commissionRate !== undefined) updateData.commissionRate = updates.commissionRate;
-  if (updates.isActive !== undefined) updateData.isActive = updates.isActive;
+  const staff = await prisma.staff.findUnique({ where: { id: staffId }, include: { user: true } });
+  if (!staff) return NextResponse.json({ error: "Staff member not found." }, { status: 404 });
+
+  const staffData: Record<string, unknown> = {};
+  const userData: Record<string, unknown> = {};
+
+  if (updates.firstName) staffData.firstName = updates.firstName;
+  if (updates.lastName) staffData.lastName = updates.lastName;
+  if (updates.jobTitle) staffData.jobTitle = updates.jobTitle;
+  if (updates.phone !== undefined) {
+    staffData.phone = updates.phone;
+    userData.phone = updates.phone || null;
+  }
+  if (updates.commissionRate !== undefined) staffData.commissionRate = updates.commissionRate;
+  if (updates.isActive !== undefined) {
+    staffData.isActive = updates.isActive;
+    userData.isActive = updates.isActive;
+  }
+  if (updates.role) userData.role = updates.role;
 
   if (updates.email) {
     const normalizedEmail = updates.email.toLowerCase().trim();
     const existing = await prisma.user.findUnique({ where: { email: normalizedEmail } });
-    if (existing && existing.id !== staffId) {
+    if (existing && existing.id !== staff.userId) {
       return NextResponse.json({ error: "Email already in use." }, { status: 409 });
     }
-    updateData.email = normalizedEmail;
+    userData.email = normalizedEmail;
   }
 
   if (updates.password) {
-    updateData.passwordHash = await bcrypt.hash(updates.password, 12);
+    userData.passwordHash = await bcrypt.hash(updates.password, 12);
   }
 
   await prisma.staff.update({
     where: { id: staffId },
-    data: updateData,
+    data: {
+      ...staffData,
+      user: { update: userData },
+    },
     include: { user: true },
   });
 
@@ -147,7 +167,24 @@ export async function DELETE(request: Request) {
   const staffId = searchParams.get("id");
   if (!staffId) return NextResponse.json({ error: "Staff ID required." }, { status: 400 });
 
-  await prisma.staff.delete({ where: { id: staffId } });
+  const staff = await prisma.staff.findUnique({ where: { id: staffId }, include: { user: true } });
+  if (!staff) return NextResponse.json({ error: "Staff member not found." }, { status: 404 });
+
+  const actorId = (session.user as { id: string }).id;
+  if (staff.userId === actorId) {
+    return NextResponse.json({ error: "You cannot delete your own account." }, { status: 400 });
+  }
+
+  // Never leave the business without an owner.
+  if (staff.user.role === "OWNER") {
+    const owners = await prisma.user.count({ where: { role: "OWNER", isActive: true } });
+    if (owners <= 1) {
+      return NextResponse.json({ error: "You cannot delete the only owner account." }, { status: 400 });
+    }
+  }
+
+  // Deleting the user cascades to the staff profile.
+  await prisma.user.delete({ where: { id: staff.userId } });
 
   return NextResponse.json({ ok: true });
 }

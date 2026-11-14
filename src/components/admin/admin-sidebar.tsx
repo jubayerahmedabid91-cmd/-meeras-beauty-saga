@@ -100,7 +100,8 @@ const NAV: NavGroup[] = [
   {
     title: "System",
     items: [
-      { href: "/admin/settings", label: "General Settings", icon: Settings },
+      {href: "/admin/settings", label: "Settings", icon: Settings},
+      {href: "/admin/security/change-password", label: "Change Password", icon: Lock},
       { href: "/admin/settings/booking", label: "Booking Settings", icon: CalendarClock },
       { href: "/admin/settings/business-hours", label: "Business Hours", icon: Clock },
       { href: "/admin/settings/notifications", label: "Notification Settings", icon: Mail },

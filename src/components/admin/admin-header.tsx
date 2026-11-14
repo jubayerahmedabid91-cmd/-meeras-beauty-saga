@@ -26,6 +26,7 @@ export function AdminHeader() {
     "/admin/customers": "Customers",
     "/admin/staff": "Staff",
     "/admin/settings": "Settings",
+    "/admin/security/change-password": "Change Password",
     "/admin/roles": "Roles",
     "/admin/calendar": "Calendar",
     "/admin/notifications": "Notifications",

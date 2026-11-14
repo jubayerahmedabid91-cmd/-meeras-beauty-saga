@@ -23,8 +23,7 @@ const body = DM_Sans({
 
 export const metadata: Metadata = {
   // Uses NEXT_PUBLIC_APP_URL from .env (set at build time)
-  // For local: http://localhost:3000
-  // For ngrok: https://demeanor-legwork-confider.ngrok-free.dev
+  // Production: https://meeras-the-beauty-saga.netlify.app
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: {
     default: `${BRAND.name} ${BRAND.tagline} | Premium Beauty Salon`,

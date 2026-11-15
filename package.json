@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/rebuild-native.mjs && node scripts/prepare-db-template.mjs && prisma generate && next build",
+    "build": "node scripts/rebuild-native.mjs && node scripts/prepare-db-template.mjs && node scripts/prepare-default-data.mjs && prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "seed": "prisma db seed"

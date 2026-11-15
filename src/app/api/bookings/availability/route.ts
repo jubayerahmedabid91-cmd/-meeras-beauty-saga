@@ -34,19 +34,28 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "A valid date (YYYY-MM-DD) is required." }, { status: 400 });
   }
 
-  const [capacity, bookings] = await Promise.all([
-    activeSpecialistCount(),
-    prisma.booking.findMany({
-      where: {
-        startsAt: {
-          gte: new Date(`${date}T00:00:00`),
-          lt: new Date(`${date}T23:59:59.999`),
+  let capacity = 1;
+  let bookings: { startsAt: Date }[] = [];
+
+  try {
+    [capacity, bookings] = await Promise.all([
+      activeSpecialistCount(),
+      prisma.booking.findMany({
+        where: {
+          startsAt: {
+            gte: new Date(`${date}T00:00:00`),
+            lt: new Date(`${date}T23:59:59.999`),
+          },
+          status: { in: ACTIVE_STATUSES },
         },
-        status: { in: ACTIVE_STATUSES },
-      },
-      select: { startsAt: true },
-    }),
-  ]);
+        select: { startsAt: true },
+      }),
+    ]);
+  } catch (error) {
+    // Database unreachable (e.g. serverless host where the native SQLite
+    // addon cannot load): leave every slot open rather than failing the page.
+    console.error("[availability] lookup failed, treating all slots as open:", error);
+  }
 
   const takenBySlot = new Map<string, number>();
   for (const booking of bookings) {

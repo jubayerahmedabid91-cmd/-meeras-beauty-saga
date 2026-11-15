@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Playfair_Display, DM_Sans } from "next/font/google";
 import { unstable_noStore as noStore } from "next/cache";
 import "./globals.css";
-import { auth } from "@/lib/auth";
+import { safeAuth } from "@/lib/auth";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { BRAND } from "@/lib/brand";
@@ -51,7 +51,7 @@ export const dynamic = "force-dynamic";
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   noStore();
-  const session = await auth();
+  const session = await safeAuth();
   const role = (session?.user as { role?: string } | undefined)?.role;
 
   return (

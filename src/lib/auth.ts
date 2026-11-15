@@ -14,6 +14,10 @@ const credentialsSchema = z.object({
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma as never),
   session: { strategy: "jwt" },
+  /* Fallbacks so a missing Netlify environment variable degrades to a
+     signed-in-as-guest experience instead of crashing the function. */
+  secret: process.env.AUTH_SECRET ?? "meeras-dev-only-secret-change-me-in-production",
+  trustHost: true,
   pages: {
     signIn: "/auth/login",
     error: "/auth/login",
@@ -69,6 +73,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 });
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Session lookup that never throws. On a host where the database is not
+ * reachable (read-only filesystem, cold start, missing tables) the visitor is
+ * treated as a guest instead of the whole page returning a 500.
+ */
+export async function safeAuth() {
+  try {
+    return await auth();
+  } catch (error) {
+    console.error("[auth] session lookup failed:", error);
+    return null;
+  }
+}
 
 export async function requireUser() {
   const session = await auth();

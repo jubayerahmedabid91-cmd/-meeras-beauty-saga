@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Clock, ArrowRight, Check, Phone } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { prisma, safeQuery } from "@/lib/prisma";
 import { formatMoney } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/badge";
@@ -13,25 +13,33 @@ import { BRAND } from "@/lib/brand";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const pkg = await prisma.package.findUnique({ where: { slug } });
+  const pkg = await safeQuery(() => prisma.package.findUnique({ where: { slug } }), null);
   if (!pkg) return { title: "Package not found" };
   return { title: pkg.name, description: pkg.description ?? undefined };
 }
 
 export default async function PackageDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const pkg = await prisma.package.findUnique({
-    where: { slug },
-    include: { items: { include: { service: true } } },
-  });
+  const pkg = await safeQuery(
+    () =>
+      prisma.package.findUnique({
+        where: { slug },
+        include: { items: { include: { service: true } } },
+      }),
+    null
+  );
 
   if (!pkg) notFound();
 
   const finalPrice = pkg.priceCents - pkg.discountCents;
-  const related = await prisma.package.findMany({
-    where: { category: pkg.category, isActive: true, id: { not: pkg.id } },
-    take: 3,
-  });
+  const related = await safeQuery(
+    () =>
+      prisma.package.findMany({
+        where: { category: pkg.category, isActive: true, id: { not: pkg.id } },
+        take: 3,
+      }),
+    []
+  );
 
   return (
     <>

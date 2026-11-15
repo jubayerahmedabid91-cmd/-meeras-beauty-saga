@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Clock, ArrowRight, Check, Phone } from "lucide-react";
-import { prisma } from "@/lib/prisma";
+import { prisma, safeQuery } from "@/lib/prisma";
 import { formatMoney } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/badge";
@@ -13,25 +13,36 @@ import { BRAND } from "@/lib/brand";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const service = await prisma.service.findUnique({ where: { slug }, include: { category: true } });
+  const service = await safeQuery(
+    () => prisma.service.findUnique({ where: { slug }, include: { category: true } }),
+    null
+  );
   if (!service) return { title: "Service not found" };
   return { title: service.name, description: service.description ?? undefined };
 }
 
 export default async function ServiceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const service = await prisma.service.findUnique({
-    where: { slug },
-    include: { category: true, addons: true },
-  });
+  const service = await safeQuery(
+    () =>
+      prisma.service.findUnique({
+        where: { slug },
+        include: { category: true, addons: true },
+      }),
+    null
+  );
 
   if (!service) notFound();
 
-  const related = await prisma.service.findMany({
-    where: { categoryId: service.categoryId, isActive: true, id: { not: service.id } },
-    take: 3,
-    include: { category: true },
-  });
+  const related = await safeQuery(
+    () =>
+      prisma.service.findMany({
+        where: { categoryId: service.categoryId, isActive: true, id: { not: service.id } },
+        take: 3,
+        include: { category: true },
+      }),
+    []
+  );
 
   return (
     <>

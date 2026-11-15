@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/page-header";
 import { BookingWizard } from "@/components/booking/booking-wizard";
 import { getServices, getPackages } from "@/lib/data";
-import { prisma } from "@/lib/prisma";
+import { prisma, safeQuery } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Book Appointment",
@@ -18,7 +18,7 @@ export default async function BookingPage({
   const [services, packages, staff] = await Promise.all([
     getServices(),
     getPackages(),
-    prisma.staff.findMany({ where: { isActive: true }, include: { user: true } }),
+    safeQuery(() => prisma.staff.findMany({ where: { isActive: true }, include: { user: true } }), []),
   ]);
 
   return (

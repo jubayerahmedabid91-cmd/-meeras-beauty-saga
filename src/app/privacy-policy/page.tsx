@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/page-header";
-import { prisma } from "@/lib/prisma";
+import { prisma, safeQuery } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
@@ -8,9 +8,13 @@ export const metadata: Metadata = {
 };
 
 export default async function PrivacyPolicyPage() {
-  const content = await prisma.websiteContent.findUnique({
-    where: { page_section_key: { page: "privacy", section: "main", key: "content" } },
-  });
+  const content = await safeQuery(
+    () =>
+      prisma.websiteContent.findUnique({
+        where: { page_section_key: { page: "privacy", section: "main", key: "content" } },
+      }),
+    null
+  );
 
   return (
     <>

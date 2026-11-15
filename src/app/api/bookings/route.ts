@@ -58,6 +58,30 @@ export async function POST(request: Request) {
     }
     const endsAt = new Date(startsAt.getTime() + durationMin * 60_000);
 
+    // ── Concurrent capacity ────────────────────────────────────────────────
+    // One active specialist can take one booking per time slot, so the slot
+    // capacity equals the number of active specialists. Adding or removing a
+    // specialist in /admin changes this limit automatically.
+    const activeSpecialists = Math.max(
+      await prisma.staff.count({ where: { isActive: true, user: { isActive: true } } }),
+      1,
+    );
+    const takenInSlot = await prisma.booking.count({
+      where: {
+        startsAt,
+        status: { in: ["PENDING", "CONFIRMED", "CHECKED_IN", "IN_PROGRESS"] },
+      },
+    });
+    if (takenInSlot >= activeSpecialists) {
+      return NextResponse.json(
+        {
+          error: "All specialists are booked for this time slot. Please choose another time.",
+          code: "SLOT_FULL",
+        },
+        { status: 409 },
+      );
+    }
+
     // Prevent overlapping bookings (same staff) — a simple guard.
     if (staffId) {
       const conflict = await prisma.booking.findFirst({
@@ -138,8 +162,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, bookingNumber: booking.bookingNumber });
   } catch (error) {
     console.error("Booking error:", error);
+    // Honest failure: the booking was NOT saved, so the customer must not be
+    // shown a confirmation. Point them at a human instead.
     return NextResponse.json(
-      { error: "Something went wrong. Please try again later." },
+      {
+        error:
+          "We could not save your booking online. Please call the salon to book — sorry for the inconvenience.",
+        code: "BOOKING_FAILED",
+      },
       { status: 500 },
     );
   }

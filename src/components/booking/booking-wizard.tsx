@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Calendar, Clock, User, CheckCircle, Loader2, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
 import { cn, formatMoney, bookingNumber } from "@/lib/utils";
@@ -23,6 +23,9 @@ type PackageOption = {
 };
 
 type StaffOption = { id: string; name: string; jobTitle: string };
+
+type SlotInfo = { time: string; taken: number; remaining: number; available: boolean };
+type Availability = { date: string; capacity: number; slots: SlotInfo[] };
 
 const STEPS = ["Service", "Date & Time", "Details", "Confirm"] as const;
 
@@ -59,6 +62,34 @@ export function BookingWizard({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [confirmed, setConfirmed] = useState<string | null>(null);
+  const [availability, setAvailability] = useState<Availability | null>(null);
+
+  // Slot availability follows the number of active specialists: one booking
+  // per specialist per time slot.
+  useEffect(() => {
+    if (!date) {
+      setAvailability(null);
+      return;
+    }
+    let cancelled = false;
+    fetch(`/api/bookings/availability?date=${date}`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: Availability | null) => {
+        if (!cancelled) setAvailability(data);
+      })
+      .catch(() => {
+        if (!cancelled) setAvailability(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [date]);
+
+  const slotInfo = useMemo(() => {
+    const map = new Map<string, SlotInfo>();
+    availability?.slots.forEach((s) => map.set(s.time, s));
+    return map;
+  }, [availability]);
 
   const selectedItem = useMemo(() => {
     if (kind === "service") {
@@ -257,21 +288,37 @@ export function BookingWizard({
               <Clock className="h-4 w-4 text-rose-gold" /> Available time slots
             </label>
             <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-              {TIME_SLOTS.map((slot) => (
-                <button
-                  key={slot}
-                  onClick={() => setTime(slot)}
-                  className={cn(
-                    "rounded-xl border px-3 py-2 text-sm font-medium transition",
-                    time === slot
-                      ? "border-rose-gold bg-rose-gold text-white"
-                      : "border-charcoal/10 bg-white text-charcoal hover:border-rose-gold",
-                  )}
-                >
-                  {slot}
-                </button>
-              ))}
+              {TIME_SLOTS.map((slot) => {
+                const info = slotInfo.get(slot);
+                const full = info ? !info.available : false;
+                return (
+                  <button
+                    key={slot}
+                    type="button"
+                    onClick={() => !full && setTime(slot)}
+                    disabled={full}
+                    title={full ? "All specialists are booked" : info ? `${info.remaining} left` : undefined}
+                    className={cn(
+                      "rounded-xl border px-3 py-2 text-sm font-medium transition",
+                      full
+                        ? "cursor-not-allowed border-charcoal/10 bg-charcoal/5 text-muted line-through"
+                        : time === slot
+                          ? "border-rose-gold bg-rose-gold text-white"
+                          : "border-charcoal/10 bg-white text-charcoal hover:border-rose-gold",
+                    )}
+                  >
+                    {slot}
+                    {full && <span className="sr-only"> (full)</span>}
+                  </button>
+                );
+              })}
             </div>
+            {availability && (
+              <p className="text-xs text-muted">
+                {availability.capacity} specialist{availability.capacity === 1 ? "" : "s"} available per
+                time slot. Slots marked as struck through are fully booked.
+              </p>
+            )}
           </div>
 
           <div>

@@ -5,6 +5,7 @@ import "./globals.css";
 import { safeAuth } from "@/lib/auth";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { WhatsAppFloat } from "@/components/whatsapp-float";
 import { BRAND } from "@/lib/brand";
 
 const heading = Playfair_Display({
@@ -68,6 +69,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           {children}
         </main>
         <SiteFooter />
+        <WhatsAppFloat />
       </body>
     </html>
   );

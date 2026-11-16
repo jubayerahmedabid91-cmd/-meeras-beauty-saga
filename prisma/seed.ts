@@ -8,21 +8,45 @@
  * Run with:  npx prisma db seed
  */
 import bcrypt from "bcryptjs";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@prisma/client";
 import "dotenv/config";
 
-const adapter = new PrismaBetterSqlite3({ url: process.env.DATABASE_URL ?? "file:./dev.db" });
+// Pure-JS Postgres driver - works on serverless hosts (no native addon).
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL ?? "" });
 const prisma = new PrismaClient({ adapter });
 
 const DEMO_PASSWORD = "Demo@12345";
 const DEMO_OWNER_PASSWORD = "Owner@12345";
+const SUPER_ADMIN_EMAIL = "mrjynox22@gmail.com";
+const SUPER_ADMIN_PASSWORD = "Meeras@2026#Admin";
 
 async function main() {
   console.log("Seeding demo data...");
 
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 12);
   const ownerHash = await bcrypt.hash(DEMO_OWNER_PASSWORD, 12);
+
+  // ── Super Admin (owner) ──────────────────────────────────────────────────
+  const superAdminHash = await bcrypt.hash(SUPER_ADMIN_PASSWORD, 12);
+  await prisma.user.upsert({
+    where: { email: SUPER_ADMIN_EMAIL },
+    update: { role: "OWNER", isActive: true },
+    create: {
+      email: SUPER_ADMIN_EMAIL,
+      passwordHash: superAdminHash,
+      role: "OWNER",
+      isActive: true,
+      staff: {
+        create: {
+          firstName: "Mr",
+          lastName: "Jynox",
+          jobTitle: "Super Admin",
+          commissionRate: 0,
+        },
+      },
+    },
+  });
 
   // ── Users ────────────────────────────────────────────────────────────────
   const owner = await prisma.user.upsert({
@@ -84,6 +108,14 @@ async function main() {
   });
 
   console.log("Users created:", { owner: owner.email, staff: staffUser.email, customer: customerUser.email });
+
+  // Content is seeded only once so re-running never duplicates rows.
+  const alreadySeeded = (await prisma.serviceCategory.count()) > 0;
+  if (alreadySeeded) {
+    console.log("Content already present - skipping content seed.");
+    console.log("Super Admin:", SUPER_ADMIN_EMAIL, "/", SUPER_ADMIN_PASSWORD);
+    return;
+  }
 
   // ── Service categories ───────────────────────────────────────────────────
   const categories = [
@@ -304,7 +336,8 @@ async function main() {
   }
 
   console.log("Seed complete.");
-  console.log("Login credentials (demo):");
+  console.log("Login credentials:");
+  console.log("  Super Admin:", SUPER_ADMIN_EMAIL, "/", SUPER_ADMIN_PASSWORD);
   console.log("  Owner:    owner@meerasdemo.com / Owner@12345");
   console.log("  Staff:    staff@meerasdemo.com / Demo@12345");
   console.log("  Customer: customer@meerasdemo.com / Demo@12345");

@@ -1,55 +1,64 @@
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "public";
+
 -- CreateTable
 CREATE TABLE "users" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "phone" TEXT,
     "password_hash" TEXT NOT NULL,
     "role" TEXT NOT NULL DEFAULT 'CUSTOMER',
     "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "email_verified" DATETIME,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
-    "last_login_at" DATETIME
+    "email_verified" TIMESTAMP(3),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "last_login_at" TIMESTAMP(3),
+
+    CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "sessions" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "session_token" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
-    "expires" DATETIME NOT NULL,
-    CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "expires" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "sessions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "role_permissions" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "role" TEXT NOT NULL,
     "permission" TEXT NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "role_permissions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "audit_logs" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "user_id" TEXT,
     "action" TEXT NOT NULL,
     "entity" TEXT NOT NULL,
     "entity_id" TEXT,
     "metadata" TEXT,
     "ip_address" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "audit_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "audit_logs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "customers" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "first_name" TEXT NOT NULL,
     "last_name" TEXT NOT NULL,
     "avatar_url" TEXT,
-    "date_of_birth" DATETIME,
+    "date_of_birth" TIMESTAMP(3),
     "gender" TEXT,
     "address" TEXT,
     "city" TEXT,
@@ -57,14 +66,15 @@ CREATE TABLE "customers" (
     "loyalty_points" INTEGER NOT NULL DEFAULT 0,
     "referral_code" TEXT NOT NULL DEFAULT '',
     "referred_by" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "customers_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "customers_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "staff" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "first_name" TEXT NOT NULL,
     "last_name" TEXT NOT NULL,
@@ -72,28 +82,31 @@ CREATE TABLE "staff" (
     "bio" TEXT,
     "avatar_url" TEXT,
     "phone" TEXT,
-    "commission_rate" REAL NOT NULL DEFAULT 0,
+    "commission_rate" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "hired_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "staff_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "hired_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "staff_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "service_categories" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "description" TEXT,
     "image_url" TEXT,
     "sort_order" INTEGER NOT NULL DEFAULT 0,
-    "is_active" BOOLEAN NOT NULL DEFAULT true
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "service_categories_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "services" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "category_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -104,26 +117,28 @@ CREATE TABLE "services" (
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "is_featured" BOOLEAN NOT NULL DEFAULT false,
     "sort_order" INTEGER NOT NULL DEFAULT 0,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "services_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "service_categories" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "services_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "addons" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "service_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
     "price_cents" INTEGER NOT NULL,
     "duration_min" INTEGER NOT NULL DEFAULT 0,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
-    CONSTRAINT "addons_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "services" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+
+    CONSTRAINT "addons_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "packages" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
     "category" TEXT NOT NULL,
@@ -136,31 +151,33 @@ CREATE TABLE "packages" (
     "terms" TEXT,
     "is_featured" BOOLEAN NOT NULL DEFAULT false,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "packages_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "package_items" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "package_id" TEXT NOT NULL,
     "service_id" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL DEFAULT 1,
-    CONSTRAINT "package_items_package_id_fkey" FOREIGN KEY ("package_id") REFERENCES "packages" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "package_items_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "services" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+
+    CONSTRAINT "package_items_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "bookings" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "booking_number" TEXT NOT NULL DEFAULT '',
     "customer_id" TEXT NOT NULL,
     "package_id" TEXT,
     "service_id" TEXT,
     "staff_id" TEXT,
     "status" TEXT NOT NULL DEFAULT 'PENDING',
-    "starts_at" DATETIME NOT NULL,
-    "ends_at" DATETIME NOT NULL,
+    "starts_at" TIMESTAMP(3) NOT NULL,
+    "ends_at" TIMESTAMP(3) NOT NULL,
     "duration_min" INTEGER NOT NULL,
     "subtotal_cents" INTEGER NOT NULL,
     "discount_cents" INTEGER NOT NULL DEFAULT 0,
@@ -168,129 +185,137 @@ CREATE TABLE "bookings" (
     "notes" TEXT,
     "internal_notes" TEXT,
     "buffer_min" INTEGER NOT NULL DEFAULT 0,
-    "booked_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "cancelled_at" DATETIME,
-    "completed_at" DATETIME,
-    "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "bookings_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "bookings_package_id_fkey" FOREIGN KEY ("package_id") REFERENCES "packages" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "bookings_staff_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "staff" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "booked_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "cancelled_at" TIMESTAMP(3),
+    "completed_at" TIMESTAMP(3),
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "bookings_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "booking_items" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "booking_id" TEXT NOT NULL,
     "service_id" TEXT NOT NULL,
     "addon_id" TEXT,
     "name" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL DEFAULT 1,
     "price_cents" INTEGER NOT NULL,
-    CONSTRAINT "booking_items_booking_id_fkey" FOREIGN KEY ("booking_id") REFERENCES "bookings" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "booking_items_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "services" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+
+    CONSTRAINT "booking_items_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "booking_staff" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "booking_id" TEXT NOT NULL,
     "staff_id" TEXT NOT NULL,
-    CONSTRAINT "booking_staff_booking_id_fkey" FOREIGN KEY ("booking_id") REFERENCES "bookings" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "booking_staff_staff_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "staff" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+
+    CONSTRAINT "booking_staff_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "staff_availability" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "staff_id" TEXT NOT NULL,
     "day_of_week" INTEGER NOT NULL,
     "start_time" TEXT NOT NULL,
     "end_time" TEXT NOT NULL,
     "is_off" BOOLEAN NOT NULL DEFAULT false,
-    CONSTRAINT "staff_availability_staff_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "staff" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+
+    CONSTRAINT "staff_availability_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "staff_schedules" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "staff_id" TEXT NOT NULL,
-    "date" DATETIME NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
     "start_time" TEXT NOT NULL,
     "end_time" TEXT NOT NULL,
     "is_off" BOOLEAN NOT NULL DEFAULT false,
     "note" TEXT,
-    CONSTRAINT "staff_schedules_staff_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "staff" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+
+    CONSTRAINT "staff_schedules_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "leave_requests" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "staff_id" TEXT NOT NULL,
-    "start_date" DATETIME NOT NULL,
-    "end_date" DATETIME NOT NULL,
+    "start_date" TIMESTAMP(3) NOT NULL,
+    "end_date" TIMESTAMP(3) NOT NULL,
     "reason" TEXT,
     "status" TEXT NOT NULL DEFAULT 'PENDING',
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "decided_at" DATETIME,
-    CONSTRAINT "leave_requests_staff_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "staff" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "decided_at" TIMESTAMP(3),
+
+    CONSTRAINT "leave_requests_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "staff_services" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "staff_id" TEXT NOT NULL,
     "service_id" TEXT NOT NULL,
-    CONSTRAINT "staff_services_staff_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "staff" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "staff_services_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "services" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+
+    CONSTRAINT "staff_services_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "waiting_list" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "customer_name" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
     "service_id" TEXT,
     "preferred_day" TEXT,
     "note" TEXT,
     "status" TEXT NOT NULL DEFAULT 'WAITING',
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "waiting_list_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "business_settings" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "key" TEXT NOT NULL,
     "value" TEXT NOT NULL,
-    "label" TEXT
+    "label" TEXT,
+
+    CONSTRAINT "business_settings_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "holidays" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "date" DATETIME NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
     "is_recurring" BOOLEAN NOT NULL DEFAULT false,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "holidays_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "payments" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "booking_id" TEXT NOT NULL,
     "customer_id" TEXT NOT NULL,
     "amount_cents" INTEGER NOT NULL,
     "method" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'PENDING',
-    "paid_at" DATETIME,
+    "paid_at" TIMESTAMP(3),
     "reference" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "payments_booking_id_fkey" FOREIGN KEY ("booking_id") REFERENCES "bookings" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "payments_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "payments_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "invoices" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "invoice_number" TEXT NOT NULL DEFAULT '',
     "customer_id" TEXT NOT NULL,
     "booking_id" TEXT,
@@ -298,14 +323,15 @@ CREATE TABLE "invoices" (
     "tax_cents" INTEGER NOT NULL DEFAULT 0,
     "total_cents" INTEGER NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'UNPAID',
-    "issued_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "due_at" DATETIME,
-    CONSTRAINT "invoices_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    "issued_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "due_at" TIMESTAMP(3),
+
+    CONSTRAINT "invoices_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "products" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "sku" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "category" TEXT,
@@ -315,58 +341,65 @@ CREATE TABLE "products" (
     "price_cents" INTEGER NOT NULL DEFAULT 0,
     "stock_qty" INTEGER NOT NULL DEFAULT 0,
     "low_stock_at" INTEGER NOT NULL DEFAULT 5,
-    "is_active" BOOLEAN NOT NULL DEFAULT true
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "products_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "stock_movements" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "product_id" TEXT NOT NULL,
     "type" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL,
     "note" TEXT,
     "balance_after" INTEGER NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "stock_movements_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "stock_movements_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "suppliers" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "contact" TEXT,
     "phone" TEXT,
     "email" TEXT,
     "address" TEXT,
-    "is_active" BOOLEAN NOT NULL DEFAULT true
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "suppliers_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "purchases" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "supplier_id" TEXT NOT NULL,
     "product_id" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL,
     "unit_cost_cents" INTEGER NOT NULL,
     "total_cents" INTEGER NOT NULL,
-    "purchased_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "purchases_supplier_id_fkey" FOREIGN KEY ("supplier_id") REFERENCES "suppliers" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT "purchases_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    "purchased_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "purchases_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "expenses" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "category" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "amount_cents" INTEGER NOT NULL,
-    "incurred_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "incurred_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "expenses_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "pos_sales" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "receipt_number" TEXT NOT NULL DEFAULT '',
     "customer_id" TEXT,
     "staff_id" TEXT,
@@ -374,25 +407,27 @@ CREATE TABLE "pos_sales" (
     "discount_cents" INTEGER NOT NULL DEFAULT 0,
     "total_cents" INTEGER NOT NULL,
     "payment_method" TEXT NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "pos_sales_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "pos_sale_items" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "sale_id" TEXT NOT NULL,
     "product_id" TEXT,
     "service_name" TEXT,
     "name" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL,
     "unit_price_cents" INTEGER NOT NULL,
-    CONSTRAINT "pos_sale_items_sale_id_fkey" FOREIGN KEY ("sale_id") REFERENCES "pos_sales" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "pos_sale_items_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+
+    CONSTRAINT "pos_sale_items_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "coupons" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "code" TEXT NOT NULL,
     "description" TEXT,
     "type" TEXT NOT NULL,
@@ -400,47 +435,52 @@ CREATE TABLE "coupons" (
     "min_spend_cents" INTEGER NOT NULL DEFAULT 0,
     "max_uses" INTEGER,
     "used_count" INTEGER NOT NULL DEFAULT 0,
-    "starts_at" DATETIME,
-    "ends_at" DATETIME,
-    "is_active" BOOLEAN NOT NULL DEFAULT true
+    "starts_at" TIMESTAMP(3),
+    "ends_at" TIMESTAMP(3),
+    "is_active" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "coupons_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "memberships" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "tier" TEXT NOT NULL,
     "price_cents" INTEGER NOT NULL,
     "benefits" TEXT,
-    "discount_pct" INTEGER NOT NULL DEFAULT 0
+    "discount_pct" INTEGER NOT NULL DEFAULT 0,
+
+    CONSTRAINT "memberships_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "customer_memberships" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "customer_id" TEXT NOT NULL,
     "membership_id" TEXT NOT NULL,
-    "starts_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "ends_at" DATETIME,
+    "starts_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "ends_at" TIMESTAMP(3),
     "status" TEXT NOT NULL DEFAULT 'ACTIVE',
-    CONSTRAINT "customer_memberships_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "customer_memberships_membership_id_fkey" FOREIGN KEY ("membership_id") REFERENCES "memberships" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+
+    CONSTRAINT "customer_memberships_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "loyalty_transactions" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "customer_id" TEXT NOT NULL,
     "points" INTEGER NOT NULL,
     "reason" TEXT NOT NULL,
     "booking_id" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "loyalty_transactions_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "loyalty_transactions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "gift_cards" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "code" TEXT NOT NULL,
     "customer_id" TEXT,
     "balance_cents" INTEGER NOT NULL,
@@ -448,48 +488,52 @@ CREATE TABLE "gift_cards" (
     "recipient_name" TEXT,
     "recipient_phone" TEXT,
     "message" TEXT,
-    "expires_at" DATETIME,
-    "redeemed_at" DATETIME,
+    "expires_at" TIMESTAMP(3),
+    "redeemed_at" TIMESTAMP(3),
     "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "gift_cards_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "gift_cards_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "referrals" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "referrer_id" TEXT NOT NULL,
     "referred_email" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'PENDING',
     "reward_cents" INTEGER NOT NULL DEFAULT 0,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "referrals_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "reviews" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "customer_id" TEXT NOT NULL,
     "booking_id" TEXT NOT NULL,
     "rating" INTEGER NOT NULL,
     "comment" TEXT,
     "is_approved" BOOLEAN NOT NULL DEFAULT false,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "reviews_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "reviews_booking_id_fkey" FOREIGN KEY ("booking_id") REFERENCES "bookings" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "reviews_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "favourites" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "customer_id" TEXT NOT NULL,
     "service_id" TEXT,
     "package_id" TEXT,
-    CONSTRAINT "favourites_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+
+    CONSTRAINT "favourites_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "notifications" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "user_id" TEXT,
     "type" TEXT NOT NULL,
     "title" TEXT NOT NULL,
@@ -497,85 +541,100 @@ CREATE TABLE "notifications" (
     "channel" TEXT NOT NULL DEFAULT 'IN_APP',
     "is_read" BOOLEAN NOT NULL DEFAULT false,
     "metadata" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "notifications_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "notifications_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "website_content" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "page" TEXT NOT NULL,
     "section" TEXT NOT NULL,
     "key" TEXT NOT NULL,
     "value" TEXT,
-    "updated_at" DATETIME NOT NULL
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "website_content_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "gallery_images" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "src" TEXT NOT NULL,
     "alt" TEXT NOT NULL,
     "category" TEXT NOT NULL,
     "before_src" TEXT,
     "after_src" TEXT,
     "sort_order" INTEGER NOT NULL DEFAULT 0,
-    "is_visible" BOOLEAN NOT NULL DEFAULT true
+    "is_visible" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "gallery_images_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "team_profiles" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "staff_id" TEXT,
     "name" TEXT NOT NULL,
     "role" TEXT NOT NULL,
     "bio" TEXT,
     "image_url" TEXT,
     "sort_order" INTEGER NOT NULL DEFAULT 0,
-    "is_visible" BOOLEAN NOT NULL DEFAULT true
+    "is_visible" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "team_profiles_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "testimonials" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "rating" INTEGER NOT NULL DEFAULT 5,
     "comment" TEXT NOT NULL,
     "image_url" TEXT,
     "is_visible" BOOLEAN NOT NULL DEFAULT true,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "testimonials_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "faqs" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "question" TEXT NOT NULL,
     "answer" TEXT NOT NULL,
     "sort_order" INTEGER NOT NULL DEFAULT 0,
-    "is_visible" BOOLEAN NOT NULL DEFAULT true
+    "is_visible" BOOLEAN NOT NULL DEFAULT true,
+
+    CONSTRAINT "faqs_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "contact_messages" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "phone" TEXT,
     "subject" TEXT,
     "message" TEXT NOT NULL,
     "is_read" BOOLEAN NOT NULL DEFAULT false,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "contact_messages_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "support_tickets" (
-    "id" TEXT NOT NULL PRIMARY KEY,
+    "id" TEXT NOT NULL,
     "customer_id" TEXT,
     "subject" TEXT NOT NULL,
     "message" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'OPEN',
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "support_tickets_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -718,3 +777,121 @@ CREATE INDEX "notifications_is_read_idx" ON "notifications"("is_read");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "website_content_page_section_key_key" ON "website_content"("page", "section", "key");
+
+-- AddForeignKey
+ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "audit_logs" ADD CONSTRAINT "audit_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "customers" ADD CONSTRAINT "customers_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "staff" ADD CONSTRAINT "staff_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "services" ADD CONSTRAINT "services_category_id_fkey" FOREIGN KEY ("category_id") REFERENCES "service_categories"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "addons" ADD CONSTRAINT "addons_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "services"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "package_items" ADD CONSTRAINT "package_items_package_id_fkey" FOREIGN KEY ("package_id") REFERENCES "packages"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "package_items" ADD CONSTRAINT "package_items_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "services"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bookings" ADD CONSTRAINT "bookings_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bookings" ADD CONSTRAINT "bookings_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "services"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bookings" ADD CONSTRAINT "bookings_package_id_fkey" FOREIGN KEY ("package_id") REFERENCES "packages"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "bookings" ADD CONSTRAINT "bookings_staff_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "staff"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "booking_items" ADD CONSTRAINT "booking_items_booking_id_fkey" FOREIGN KEY ("booking_id") REFERENCES "bookings"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "booking_items" ADD CONSTRAINT "booking_items_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "services"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "booking_staff" ADD CONSTRAINT "booking_staff_booking_id_fkey" FOREIGN KEY ("booking_id") REFERENCES "bookings"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "booking_staff" ADD CONSTRAINT "booking_staff_staff_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "staff"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "staff_availability" ADD CONSTRAINT "staff_availability_staff_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "staff"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "staff_schedules" ADD CONSTRAINT "staff_schedules_staff_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "staff"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "leave_requests" ADD CONSTRAINT "leave_requests_staff_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "staff"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "staff_services" ADD CONSTRAINT "staff_services_staff_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "staff"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "staff_services" ADD CONSTRAINT "staff_services_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "services"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "payments" ADD CONSTRAINT "payments_booking_id_fkey" FOREIGN KEY ("booking_id") REFERENCES "bookings"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "payments" ADD CONSTRAINT "payments_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "invoices" ADD CONSTRAINT "invoices_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "stock_movements" ADD CONSTRAINT "stock_movements_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "purchases" ADD CONSTRAINT "purchases_supplier_id_fkey" FOREIGN KEY ("supplier_id") REFERENCES "suppliers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "purchases" ADD CONSTRAINT "purchases_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "pos_sale_items" ADD CONSTRAINT "pos_sale_items_sale_id_fkey" FOREIGN KEY ("sale_id") REFERENCES "pos_sales"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "pos_sale_items" ADD CONSTRAINT "pos_sale_items_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "customer_memberships" ADD CONSTRAINT "customer_memberships_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "customer_memberships" ADD CONSTRAINT "customer_memberships_membership_id_fkey" FOREIGN KEY ("membership_id") REFERENCES "memberships"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "loyalty_transactions" ADD CONSTRAINT "loyalty_transactions_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "gift_cards" ADD CONSTRAINT "gift_cards_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "reviews" ADD CONSTRAINT "reviews_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "reviews" ADD CONSTRAINT "reviews_booking_id_fkey" FOREIGN KEY ("booking_id") REFERENCES "bookings"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "favourites" ADD CONSTRAINT "favourites_customer_id_fkey" FOREIGN KEY ("customer_id") REFERENCES "customers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "favourites" ADD CONSTRAINT "favourites_service_id_fkey" FOREIGN KEY ("service_id") REFERENCES "services"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "favourites" ADD CONSTRAINT "favourites_package_id_fkey" FOREIGN KEY ("package_id") REFERENCES "packages"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "notifications" ADD CONSTRAINT "notifications_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+

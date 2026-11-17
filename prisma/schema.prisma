@@ -254,6 +254,7 @@ model Booking {
   subtotalCents Int      @map("subtotal_cents")
   discountCents Int      @default(0) @map("discount_cents")
   totalCents    Int      @map("total_cents")
+  couponCode    String?  @map("coupon_code")
   notes         String?
   internalNotes String?  @map("internal_notes")
   bufferMin     Int      @default(0) @map("buffer_min")

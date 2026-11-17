@@ -170,6 +170,7 @@ export async function POST(request: Request) {
         subtotalCents: priceCents,
         discountCents,
         totalCents: priceCents - discountCents,
+        couponCode: appliedCouponCode,
         notes: customer.notes || null,
         items: serviceId
           ? { create: [{ serviceId, name, quantity: 1, priceCents }] }

@@ -147,6 +147,7 @@ export default async function AdminBookingsPage({
                         time: formatTime(b.startsAt),
                         totalCents: b.totalCents,
                         discountCents: b.discountCents,
+                        couponCode: b.couponCode,
                         status: b.status,
                         staffName: b.staff ? `${b.staff.firstName} ${b.staff.lastName}` : null,
                         notes: b.notes,

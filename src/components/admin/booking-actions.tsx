@@ -14,6 +14,7 @@ export type BookingActionData = {
   time: string;
   totalCents: number;
   discountCents?: number;
+  couponCode?: string | null;
   status: string;
   staffName: string | null;
   notes: string | null;
@@ -123,7 +124,14 @@ export function BookingActions({ booking }: { booking: BookingActionData }) {
                     <span>{formatMoney(booking.totalCents + (booking.discountCents ?? 0))}</span>
                   </div>
                   <div className="flex justify-between font-medium text-emerald-700">
-                    <span>Discount</span>
+                    <span>
+                      Discount
+                      {booking.couponCode ? (
+                        <span className="ml-1 rounded bg-emerald-100 px-1.5 py-0.5 font-mono text-[0.6rem] uppercase text-emerald-800">
+                          {booking.couponCode}
+                        </span>
+                      ) : null}
+                    </span>
                     <span>-{formatMoney(booking.discountCents ?? 0)}</span>
                   </div>
                 </div>

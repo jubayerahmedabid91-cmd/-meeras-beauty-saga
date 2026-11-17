@@ -1,25 +1,22 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { safeAuth } from "@/lib/auth";
-import { AdminSidebar } from "@/components/admin/admin-sidebar";
-import { LogoWordmark } from "@/components/logo";
-import { AdminHeader } from "@/components/admin/admin-header";
+import { AdminShell } from "@/components/admin/admin-shell";
 
 export const metadata: Metadata = { title: "Admin Panel" };
 
+/**
+ * Admin shell — a dedicated, mobile-first layout.
+ *
+ * The storefront header/footer live in the `(site)` route group, so nothing
+ * here is duplicated: just one top bar (mobile), the dark sidebar (desktop),
+ * and a sticky bottom tab bar for one-thumb navigation.
+ */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await safeAuth();
   if (!session?.user) redirect("/auth/login");
   const role = (session.user as { role?: string }).role;
   if (!["OWNER", "ADMIN", "MANAGER", "RECEPTIONIST"].includes(role ?? "")) redirect("/auth/login");
 
-  return (
-    <div className="min-h-screen bg-cream flex">
-      <AdminSidebar role={role ?? "RECEPTIONIST"} />
-      <div className="flex-1 min-h-screen">
-        <AdminHeader />
-        <main className="p-4 md:p-6 lg:p-8">{children}</main>
-      </div>
-    </div>
-  );
+  return <AdminShell>{children}</AdminShell>;
 }

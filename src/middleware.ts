@@ -14,7 +14,9 @@ export function middleware(req: NextRequest) {
   const isProtected =
     pathname.startsWith("/admin") ||
     pathname.startsWith("/staff") ||
-    pathname.startsWith("/customer");
+    // /customer itself is a public dashboard with a no-login lookup; every
+    // deeper customer page (profile, payments, ...) still requires a session.
+    (pathname.startsWith("/customer") && pathname !== "/customer");
 
   // ── Protected routes need authentication ──
   if (isProtected && !isLoggedIn) {

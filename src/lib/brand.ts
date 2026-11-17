@@ -55,6 +55,7 @@ export const ROUTES = {
   contact: "/contact",
   faq: "/faq",
   booking: "/booking",
+  trackBooking: "/track-booking",
   privacy: "/privacy-policy",
   terms: "/terms-and-conditions",
   auth: {

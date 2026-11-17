@@ -1,11 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Playfair_Display, DM_Sans } from "next/font/google";
-import { unstable_noStore as noStore } from "next/cache";
 import "./globals.css";
-import { safeAuth } from "@/lib/auth";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
-import { WhatsAppFloat } from "@/components/whatsapp-float";
 import { BRAND } from "@/lib/brand";
 
 const heading = Playfair_Display({
@@ -50,26 +45,18 @@ export const viewport: Viewport = {
 
 export const dynamic = "force-dynamic";
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
-  noStore();
-  const session = await safeAuth();
-  const role = (session?.user as { role?: string } | undefined)?.role;
-
+/**
+ * Root shell only — HTML, fonts and global styles.
+ *
+ * Storefront chrome (SiteHeader / SiteFooter / WhatsApp float) lives in the
+ * `(site)` route group so that `/admin` renders its own dedicated, native-app
+ * style shell with NO duplicate headers.
+ */
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${heading.variable} ${body.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-cream font-body text-charcoal">
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-charcoal focus:px-4 focus:py-2 focus:text-cream"
-        >
-          Skip to content
-        </a>
-        <SiteHeader user={role ? { role } : null} />
-        <main id="main-content" className="flex-1">
-          {children}
-        </main>
-        <SiteFooter />
-        <WhatsAppFloat />
+        {children}
       </body>
     </html>
   );

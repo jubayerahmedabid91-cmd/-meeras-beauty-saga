@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, MoveHorizontal, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BeforeAfterSlider } from "@/components/before-after-slider";
 
 type ShowcaseImage = {
   id: string;
@@ -141,65 +142,5 @@ export function ShowcaseClient({ images }: { images: ShowcaseImage[] }) {
         </div>
       </div>
     </section>
-  );
-}
-
-/** Draggable before/after comparison. */
-function BeforeAfterSlider({ before, after, alt }: { before: string; after: string; alt: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState(50);
-
-  function update(clientX: number) {
-    const el = ref.current;
-    if (!el) return;
-    const rect = el.getBoundingClientRect();
-    const next = ((clientX - rect.left) / rect.width) * 100;
-    setPos(Math.max(4, Math.min(96, next)));
-  }
-
-  return (
-    <div
-      ref={ref}
-      role="slider"
-      aria-label={`Before and after comparison for ${alt}`}
-      aria-valuenow={Math.round(pos)}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "ArrowLeft") setPos((p) => Math.max(4, p - 4));
-        if (e.key === "ArrowRight") setPos((p) => Math.min(96, p + 4));
-      }}
-      onPointerDown={(e) => {
-        (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
-        update(e.clientX);
-      }}
-      onPointerMove={(e) => e.buttons === 1 && update(e.clientX)}
-      className="absolute inset-0 cursor-ew-resize touch-none select-none"
-    >
-      <div className="absolute inset-y-0 overflow-hidden" style={{ width: `${pos}%` }}>
-        <Image
-          src={before}
-          alt={`Before - ${alt}`}
-          fill
-          sizes="(max-width: 640px) 100vw, 90vw"
-          className="object-cover object-left"
-        />
-        <span className="absolute left-3 top-3 rounded-full bg-charcoal/70 px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wider text-cream">
-          Before
-        </span>
-      </div>
-      <span className="absolute right-3 top-3 rounded-full bg-rose-gold px-2.5 py-1 text-[0.6rem] font-bold uppercase tracking-wider text-white">
-        After
-      </span>
-      <div
-        className="absolute inset-y-0 w-0.5 bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.15)]"
-        style={{ left: `${pos}%` }}
-      >
-        <span className="absolute left-1/2 top-1/2 flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white text-charcoal shadow-lift">
-          <MoveHorizontal className="h-4 w-4" />
-        </span>
-      </div>
-    </div>
   );
 }

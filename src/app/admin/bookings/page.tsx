@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Calendar, Clock, Search } from "lucide-react";
+import { Calendar, Search } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatTime, formatMoney } from "@/lib/utils";
 import { StatusBadge } from "@/components/badge";
 import { EmptyState } from "@/components/empty-state";
-import { BookingActions } from "@/components/admin/booking-actions";
+import { BookingRowActions } from "@/components/admin/booking-row-actions";
+import { BookingCard } from "@/components/admin/booking-card";
+import { StaffAssignSelect } from "@/components/admin/staff-assign-select";
 
 export const metadata: Metadata = { title: "All Bookings" };
 
@@ -44,14 +46,22 @@ export default async function AdminBookingsPage({
 
   const counts = await prisma.booking.groupBy({ by: ["status"], _count: true });
 
+  const staffList = await prisma.staff.findMany({
+    where: { isActive: true, user: { isActive: true } },
+    orderBy: { firstName: "asc" },
+    select: { id: true, firstName: true, lastName: true },
+  });
+
+  const staffOptions = staffList.map((s) => ({ id: s.id, name: `${s.firstName} ${s.lastName}` }));
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold md:text-3xl">Bookings</h1>
           <p className="mt-1 text-sm text-muted">Manage all appointments and requests.</p>
         </div>
-        <form className="relative">
+        <form className="relative w-full sm:w-72">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
           <input
             name="q"
@@ -62,6 +72,7 @@ export default async function AdminBookingsPage({
         </form>
       </div>
 
+      {/* Status filter chips */}
       <div className="flex flex-wrap gap-2">
         <Link
           href="/admin/bookings"
@@ -94,71 +105,96 @@ export default async function AdminBookingsPage({
           description="Bookings matching your filters will appear here."
         />
       ) : (
-        <div className="card overflow-x-auto">
-          <table className="w-full min-w-[720px] text-sm">
-            <thead>
-              <tr className="border-b border-charcoal/10 text-left text-xs uppercase tracking-wider text-muted">
-                <th className="p-4">Booking</th>
-                <th className="p-4">Client</th>
-                <th className="p-4">Service</th>
-                <th className="p-4">Date &amp; Time</th>
-                <th className="p-4">Staff</th>
-                <th className="p-4">Total</th>
-                <th className="p-4">Status</th>
-                <th className="p-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-charcoal/5">
-              {bookings.map((b) => (
-                <tr key={b.id} className="hover:bg-pastel-pink/30">
-                  <td className="p-4">
-                    <Link href={`/admin/bookings/${b.id}`} className="font-semibold text-rose-gold hover:underline">
-                      {b.bookingNumber}
-                    </Link>
-                  </td>
-                  <td className="p-4">
-                    {b.customer.firstName} {b.customer.lastName}
-                  </td>
-                  <td className="p-4">{b.service?.name ?? b.package?.name ?? "-"}</td>
-                  <td className="p-4">
-                    <p className="flex items-center gap-1">
-                      <Calendar className="h-3.5 w-3.5 text-rose-gold" />
-                      {formatDate(b.startsAt)}
-                    </p>
-                    <p className="mt-0.5 flex items-center gap-1 text-xs text-muted">
-                      <Clock className="h-3.5 w-3.5" />
-                      {formatTime(b.startsAt)}
-                    </p>
-                  </td>
-                  <td className="p-4">{b.staff ? `${b.staff.firstName} ${b.staff.lastName}` : "-"}</td>
-                  <td className="p-4 font-semibold">{formatMoney(b.totalCents)}</td>
-                  <td className="p-4">
-                    <StatusBadge status={b.status} />
-                  </td>
-                  <td className="p-4">
-                    <BookingActions
-                      booking={{
-                        id: b.id,
-                        bookingNumber: b.bookingNumber,
-                        customerName: `${b.customer.firstName} ${b.customer.lastName}`,
-                        customerPhone: b.customer.user.phone,
-                        service: b.service?.name ?? b.package?.name ?? "-",
-                        date: formatDate(b.startsAt),
-                        time: formatTime(b.startsAt),
-                        totalCents: b.totalCents,
-                        discountCents: b.discountCents,
-                        couponCode: b.couponCode,
-                        status: b.status,
-                        staffName: b.staff ? `${b.staff.firstName} ${b.staff.lastName}` : null,
-                        notes: b.notes,
-                      }}
-                    />
-                  </td>
+        <>
+          {/* ── Mobile: full-width cards with 1-click actions ── */}
+          <div className="space-y-3 lg:hidden">
+            {bookings.map((b) => (
+              <BookingCard
+                key={b.id}
+                staff={staffOptions}
+                booking={{
+                  id: b.id,
+                  bookingNumber: b.bookingNumber,
+                  customerName: `${b.customer.firstName} ${b.customer.lastName}`,
+                  customerPhone: b.customer.user.phone,
+                  service: b.service?.name ?? b.package?.name ?? "-",
+                  date: formatDate(b.startsAt),
+                  time: formatTime(b.startsAt),
+                  totalCents: b.totalCents,
+                  discountCents: b.discountCents,
+                  couponCode: b.couponCode,
+                  status: b.status,
+                  staffId: b.staff?.id ?? null,
+                  staffName: b.staff ? `${b.staff.firstName} ${b.staff.lastName}` : null,
+                  notes: b.notes,
+                }}
+              />
+            ))}
+          </div>
+
+          {/* ── Desktop: full table ── */}
+          <div className="card hidden overflow-x-auto lg:block">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-charcoal/10 text-left text-xs uppercase tracking-wider text-muted">
+                  <th className="p-4">Booking</th>
+                  <th className="p-4">Client</th>
+                  <th className="p-4">Service</th>
+                  <th className="p-4">Date &amp; Time</th>
+                  <th className="p-4">Staff</th>
+                  <th className="p-4">Total</th>
+                  <th className="p-4">Status</th>
+                  <th className="p-4 text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-charcoal/5">
+                {bookings.map((b) => (
+                  <tr key={b.id} className="hover:bg-pastel-pink/30">
+                    <td className="p-4">
+                      <Link href={`/admin/bookings/${b.id}`} className="font-semibold text-rose-gold hover:underline">
+                        {b.bookingNumber}
+                      </Link>
+                    </td>
+                    <td className="p-4">
+                      {b.customer.firstName} {b.customer.lastName}
+                    </td>
+                    <td className="p-4">{b.service?.name ?? b.package?.name ?? "-"}</td>
+                    <td className="p-4">
+                      {formatDate(b.startsAt)}
+                      <p className="mt-0.5 text-xs text-muted">{formatTime(b.startsAt)}</p>
+                    </td>
+                    <td className="p-4">
+                      <StaffAssignSelect bookingId={b.id} value={b.staff?.id ?? null} staff={staffOptions} />
+                    </td>
+                    <td className="p-4 font-semibold">{formatMoney(b.totalCents)}</td>
+                    <td className="p-4">
+                      <StatusBadge status={b.status} />
+                    </td>
+                    <td className="p-4">
+                      <BookingRowActions
+                        booking={{
+                          id: b.id,
+                          bookingNumber: b.bookingNumber,
+                          customerName: `${b.customer.firstName} ${b.customer.lastName}`,
+                          customerPhone: b.customer.user.phone,
+                          service: b.service?.name ?? b.package?.name ?? "-",
+                          date: formatDate(b.startsAt),
+                          time: formatTime(b.startsAt),
+                          totalCents: b.totalCents,
+                          discountCents: b.discountCents,
+                          couponCode: b.couponCode,
+                          status: b.status,
+                          staffName: b.staff ? `${b.staff.firstName} ${b.staff.lastName}` : null,
+                          notes: b.notes,
+                        }}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </div>
   );

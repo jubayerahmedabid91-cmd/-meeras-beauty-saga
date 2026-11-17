@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, X, Calendar, User, LogIn, LayoutDashboard, Sparkles } from "lucide-react";
+import { Menu, X, Calendar, User, LogIn, LayoutDashboard, Sparkles, PackageSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoWordmark } from "./logo";
 
@@ -15,6 +15,7 @@ const NAV = [
   { href: "/bridal", label: "Bridal" },
   { href: "/gallery", label: "Gallery" },
   { href: "/offers", label: "Offers" },
+  { href: "/track-booking", label: "Track Booking" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -92,6 +93,16 @@ export function SiteHeader({ user }: { user: { role?: string } | null }) {
         </nav>
 
         <div className="flex items-center gap-2">
+          <Link
+            href="/track-booking"
+            className={cn(
+              "inline-flex items-center gap-1.5 rounded-full px-3 py-2.5 text-xs font-semibold transition md:text-sm",
+              pathname === "/track-booking" ? "text-rose-gold" : "text-charcoal/70 hover:text-rose-gold",
+            )}
+          >
+            <PackageSearch className="h-4 w-4" />
+            Track
+          </Link>
           <Link
             href="/booking"
             className="btn-primary hidden !px-5 !py-2.5 text-xs sm:inline-flex md:text-sm"
@@ -173,6 +184,10 @@ export function SiteHeader({ user }: { user: { role?: string } | null }) {
               <Link href="/booking" className="btn-primary w-full">
                 <Calendar className="h-4 w-4" />
                 Book Appointment
+              </Link>
+              <Link href="/track-booking" className="btn-outline w-full">
+                <PackageSearch className="h-4 w-4" />
+                Track Booking Status
               </Link>
               <Link href={user ? accountHref : "/auth/login"} className="btn-dark w-full">
                 {user ? <LayoutDashboard className="h-4 w-4" /> : <User className="h-4 w-4" />}

@@ -12,6 +12,12 @@
   --color-ink: #1a1a1a;
   --color-muted: #6b6b6b;
 
+  /* ── Luxury champagne-gold accents ────────────────────────────────── */
+  --color-champagne: #f3e9d8;
+  --color-champagne-deep: #e6d5b8;
+  --color-gold: #c2a25e;
+  --color-gold-dark: #9a7f42;
+
   /* ── Typography ───────────────────────────────────────────────────── */
   --font-heading: "Playfair Display", Georgia, "Times New Roman", serif;
   --font-body: "DM Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -81,6 +87,20 @@
 
   .btn-ghost {
     @apply text-charcoal hover:bg-rose-gold/10;
+  }
+
+  /* ── Glassmorphism (luxury hero / overlays) ──────────────────────── */
+  .glass {
+    @apply border border-white/60 bg-white/60 backdrop-blur-md;
+  }
+
+  .btn-glass {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/70 bg-white/40 px-6 py-3 text-sm font-semibold text-charcoal backdrop-blur-md transition-all duration-200 hover:border-gold/50 hover:bg-white/65 hover:shadow-card disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  /* ── Gold-rimmed luxury card hover ───────────────────────────────── */
+  .card-luxury {
+    @apply rounded-[var(--radius-card)] border border-charcoal/5 bg-white shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:border-gold/50 hover:shadow-[0_24px_60px_rgba(154,127,66,0.16)];
   }
 
   /* ── Cards ───────────────────────────────────────────────────────── */
@@ -159,6 +179,15 @@
 @keyframes slide-in-right {
   from {
     transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-100%);
   }
   to {
     transform: translateX(0);

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { MessageCircle, Printer, ReceiptText, X } from "lucide-react";
-import { formatMoney } from "@/lib/utils";
+import { cn, formatMoney } from "@/lib/utils";
 
 export type BookingActionData = {
   id: string;
@@ -24,8 +24,18 @@ function digits(value: string | null): string {
   return (value ?? "").replace(/[^\d]/g, "");
 }
 
-export function BookingActions({ booking }: { booking: BookingActionData }) {
+export function BookingActions({
+  booking,
+  variant = "row",
+}: {
+  booking: BookingActionData;
+  variant?: "row" | "card";
+}) {
   const [open, setOpen] = useState(false);
+  const isCard = variant === "card";
+  const btnClass = isCard
+    ? "flex flex-1 items-center justify-center gap-1 rounded-xl border px-3 py-2.5 text-sm font-semibold transition"
+    : "inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-xs font-semibold transition";
 
   const phone = digits(booking.customerPhone);
   const message = encodeURIComponent(
@@ -47,16 +57,16 @@ export function BookingActions({ booking }: { booking: BookingActionData }) {
 
   return (
     <>
-      <div className="flex items-center justify-end gap-1.5">
+      <div className={isCard ? "flex items-center gap-2" : "flex items-center justify-end gap-1.5"}>
         {booking.status !== "CANCELLED" && (
           <a
             href={waLink}
             target="_blank"
             rel="noopener noreferrer"
             title="Send confirmation on WhatsApp"
-            className="inline-flex items-center gap-1 rounded-lg border border-emerald-600/30 px-2.5 py-1 text-xs font-semibold text-emerald-700 transition hover:bg-emerald-50"
+            className={cn(btnClass, "border-emerald-600/30 text-emerald-700 hover:bg-emerald-50")}
           >
-            <MessageCircle className="h-3.5 w-3.5" />
+            <MessageCircle className="h-4 w-4" />
             WhatsApp
           </a>
         )}
@@ -64,9 +74,9 @@ export function BookingActions({ booking }: { booking: BookingActionData }) {
           type="button"
           onClick={() => setOpen(true)}
           title="Printable receipt"
-          className="inline-flex items-center gap-1 rounded-lg border border-charcoal/15 px-2.5 py-1 text-xs font-semibold text-charcoal transition hover:border-rose-gold hover:text-rose-gold"
+          className={cn(btnClass, "border-charcoal/15 text-charcoal hover:border-rose-gold hover:text-rose-gold")}
         >
-          <ReceiptText className="h-3.5 w-3.5" />
+          <ReceiptText className="h-4 w-4" />
           Receipt
         </button>
       </div>

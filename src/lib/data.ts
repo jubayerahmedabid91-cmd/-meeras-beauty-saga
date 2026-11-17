@@ -167,3 +167,16 @@ function readDefaultSetting<T>(key: string, fallback: T): T {
     return fallback;
   }
 }
+
+/**
+ * Resolves the salon's WhatsApp number (env override wins over the
+ * owner-configurable business setting). Returns digits only, or null when no
+ * valid number is configured — we never invent one.
+ */
+export async function getWhatsAppDigits(): Promise<string | null> {
+  const setting = (await getBusinessSetting<string>("whatsapp", "")) ?? "";
+  const raw = process.env.NEXT_PUBLIC_WHATSAPP?.trim() || String(setting).trim();
+  const digits = raw.replace(/\D/g, "");
+  const valid = digits.length >= 8 && digits.length <= 15 && !/^0+$/.test(digits);
+  return valid ? digits : null;
+}

@@ -1,34 +1,39 @@
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { SectionHeading } from "@/components/section-heading";
 import { Reveal } from "@/components/reveal";
-import { ServiceCard } from "@/components/cards/service-card";
-import { getFeaturedServices } from "@/lib/data";
+import { ServicesShowcaseClient, type ShowcaseService } from "./services-showcase-client";
+import { getServices } from "@/lib/data";
 
 export async function FeaturedServices() {
-  const services = await getFeaturedServices(6);
+  const services = await getServices(9);
+  const showcase: ShowcaseService[] = services.map((s) => ({
+    id: s.id,
+    name: s.name,
+    slug: s.slug,
+    description: s.description,
+    imageUrl: s.imageUrl,
+    durationMin: s.durationMin,
+    priceCents: s.priceCents,
+    categoryName: s.category.name,
+  }));
+
   return (
     <section className="bg-white py-16 md:py-24">
       <div className="container-site">
         <SectionHeading
           eyebrow="Our Expertise"
-          title="Featured Services"
-          subtitle="Signature treatments and styling, delivered by our specialist team."
+          title="Signature Services"
+          subtitle="Browse by category and book your favourite treatment in seconds."
         />
-        {services.length === 0 ? (
+        {showcase.length === 0 ? (
           <Reveal className="mt-12 text-center text-muted">
             Services will appear here once the owner adds them.
           </Reveal>
         ) : (
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {services.map((s, i) => (
-              <Reveal key={s.id} delay={i * 0.06}>
-                <ServiceCard service={s} />
-              </Reveal>
-            ))}
-          </div>
+          <ServicesShowcaseClient services={showcase} />
         )}
-        <Reveal className="mt-10 text-center">
+        <Reveal className="mt-12 text-center">
           <Link href="/services" className="btn-outline">
             View all services
             <ArrowRight className="h-4 w-4" />

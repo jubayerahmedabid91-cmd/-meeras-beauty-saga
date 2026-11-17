@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, Clock, User, CheckCircle, Loader2, ArrowLeft, ArrowRight, Sparkles } from "lucide-react";
+import { Calendar, Clock, User, CheckCircle, Loader2, ArrowLeft, ArrowRight, Sparkles, PackageSearch } from "lucide-react";
 import { cn, formatMoney, bookingNumber } from "@/lib/utils";
 
 type ServiceOption = {
@@ -206,9 +206,18 @@ export function BookingWizard({
             </p>
           )}
         </div>
-        <button onClick={() => router.push("/customer")} className="btn-primary mt-6">
-          View my bookings
-        </button>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <button
+            onClick={() => router.push(`/track-booking?q=${encodeURIComponent(confirmed)}`)}
+            className="btn-primary"
+          >
+            <PackageSearch className="h-4 w-4" />
+            Track Booking Status
+          </button>
+          <button onClick={() => router.push("/customer")} className="btn-outline">
+            View my bookings
+          </button>
+        </div>
       </div>
     );
   }

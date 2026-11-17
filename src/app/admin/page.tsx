@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/badge";
 import { Reveal } from "@/components/reveal";
 import { EmptyState } from "@/components/empty-state";
 import { RevenueChart, type TrendPoint } from "@/components/admin/revenue-chart";
+import { BookingRowActions } from "@/components/admin/booking-row-actions";
 
 export const metadata: Metadata = { title: "Admin Dashboard" };
 
@@ -55,6 +56,7 @@ export default async function AdminDashboardPage() {
     monthRevenueAgg,
     activeStaff,
     trendRows,
+    pendingList,
   ] = await Promise.all([
     prisma.booking.count(),
     prisma.booking.count({ where: { startsAt: { gte: today, lt: tomorrow } } }),
@@ -90,6 +92,17 @@ export default async function AdminDashboardPage() {
     prisma.booking.findMany({
       where: { bookedAt: { gte: new Date(Date.now() - 13 * 86_400_000) } },
       select: { bookedAt: true, totalCents: true, status: true },
+    }),
+    prisma.booking.findMany({
+      where: { status: "PENDING" },
+      orderBy: { startsAt: "asc" },
+      take: 4,
+      include: {
+        customer: { include: { user: { select: { phone: true } } } },
+        service: true,
+        package: true,
+        staff: true,
+      },
     }),
   ]);
 
@@ -132,6 +145,57 @@ export default async function AdminDashboardPage() {
         <h1 className="text-2xl font-bold md:text-3xl">Dashboard</h1>
         <p className="mt-1 text-sm text-muted">Business overview and today's activity.</p>
       </div>
+
+      {/* ── Needs your attention: pending requests with 1-click actions ── */}
+      {pendingList.length > 0 && (
+        <div className="card border-amber-300/60 bg-amber-50/50 p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-base font-bold">Needs your attention</h2>
+            <Link
+              href="/admin/bookings?status=PENDING"
+              className="text-xs font-semibold text-rose-gold hover:underline"
+            >
+              All pending ({pendingBookings})
+            </Link>
+          </div>
+          <ul className="mt-3 space-y-3">
+            {pendingList.map((b) => (
+              <li
+                key={b.id}
+                className="flex flex-col gap-3 rounded-xl bg-white p-3 shadow-soft sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">
+                    {b.customer.firstName} {b.customer.lastName} · {b.service?.name ?? b.package?.name ?? "Appointment"}
+                  </p>
+                  <p className="text-xs text-muted">
+                    {formatDate(b.startsAt)} at {formatTime(b.startsAt)}
+                  </p>
+                </div>
+                <div className="shrink-0">
+                  <BookingRowActions
+                    booking={{
+                      id: b.id,
+                      bookingNumber: b.bookingNumber,
+                      customerName: `${b.customer.firstName} ${b.customer.lastName}`,
+                      customerPhone: b.customer.user.phone,
+                      service: b.service?.name ?? b.package?.name ?? "-",
+                      date: formatDate(b.startsAt),
+                      time: formatTime(b.startsAt),
+                      totalCents: b.totalCents,
+                      discountCents: b.discountCents,
+                      couponCode: b.couponCode,
+                      status: b.status,
+                      staffName: b.staff ? `${b.staff.firstName} ${b.staff.lastName}` : null,
+                      notes: b.notes,
+                    }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {kpis.map((s, i) => (

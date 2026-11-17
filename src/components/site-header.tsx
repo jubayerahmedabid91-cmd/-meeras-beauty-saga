@@ -19,7 +19,15 @@ const NAV = [
   { href: "/contact", label: "Contact" },
 ];
 
-export function SiteHeader({ user }: { user: { role?: string } | null }) {
+export function SiteHeader({
+  user,
+  openingHours,
+  logoUrl,
+}: {
+  user: { role?: string } | null;
+  openingHours?: string;
+  logoUrl?: string | null;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -42,12 +50,15 @@ export function SiteHeader({ user }: { user: { role?: string } | null }) {
     };
   }, [open]);
 
+  // Public navigation must never link to the admin panel. Admins reach
+  // /admin directly (protected by authentication); customers/staff get their
+  // own portal links here.
   const accountHref =
-    user?.role === "OWNER" || user?.role === "ADMIN" || user?.role === "MANAGER"
-      ? "/admin"
-      : user?.role === "STAFF"
-        ? "/staff"
-        : "/customer";
+    user?.role === "STAFF"
+      ? "/staff"
+      : user?.role === "CUSTOMER"
+        ? "/customer"
+        : null; // OWNER / ADMIN / MANAGER: no public dashboard link
 
   return (
     <header
@@ -61,15 +72,15 @@ export function SiteHeader({ user }: { user: { role?: string } | null }) {
         <div className="container-site flex h-9 items-center justify-between text-xs">
           <p className="tracking-wide">Premium beauty salon &middot; Hair &middot; Makeup &middot; Bridal &middot; Skin</p>
           <div className="flex items-center gap-5 text-cream/80">
-            <span>Mon &ndash; Sat &middot; 10:00 AM &ndash; 8:00 PM</span>
-            <Link href="/contact" className="hover:text-rose-gold-light">Book a visit</Link>
+            {openingHours && <span>{openingHours}</span>}
+            <Link href="/booking" className="hover:text-rose-gold-light">Book a visit</Link>
           </div>
         </div>
       </div>
 
       {/* Main bar */}
       <div className="container-site flex h-16 items-center justify-between md:h-20">
-        <LogoWordmark />
+        <LogoWordmark logoUrl={logoUrl} />
 
         <nav className="hidden items-center gap-7 lg:flex" aria-label="Primary">
           {NAV.map((item) => {
@@ -110,13 +121,15 @@ export function SiteHeader({ user }: { user: { role?: string } | null }) {
             <Calendar className="h-4 w-4" />
             Book Now
           </Link>
-          <Link
-            href={user ? accountHref : "/auth/login"}
-            className="btn-outline hidden !px-4 !py-2.5 text-xs sm:inline-flex md:text-sm"
-          >
-            {user ? <LayoutDashboard className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
-            {user ? "Dashboard" : "Sign In"}
-          </Link>
+          {user && !accountHref ? null : (
+            <Link
+              href={user ? accountHref : "/auth/login"}
+              className="btn-outline hidden !px-4 !py-2.5 text-xs sm:inline-flex md:text-sm"
+            >
+              {user ? <LayoutDashboard className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
+              {user ? "My Account" : "Sign In"}
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -147,7 +160,7 @@ export function SiteHeader({ user }: { user: { role?: string } | null }) {
             style={{ animation: "slide-in-right 0.3s cubic-bezier(0.22,1,0.36,1)" }}
           >
             <div className="flex items-center justify-between border-b border-charcoal/10 p-5">
-              <LogoWordmark compact />
+              <LogoWordmark compact logoUrl={logoUrl} />
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -189,10 +202,12 @@ export function SiteHeader({ user }: { user: { role?: string } | null }) {
                 <PackageSearch className="h-4 w-4" />
                 Track Booking Status
               </Link>
-              <Link href={user ? accountHref : "/auth/login"} className="btn-dark w-full">
-                {user ? <LayoutDashboard className="h-4 w-4" /> : <User className="h-4 w-4" />}
-                {user ? "Go to Dashboard" : "Sign In"}
-              </Link>
+              {user && !accountHref ? null : (
+                <Link href={user ? accountHref : "/auth/login"} className="btn-dark w-full">
+                  {user ? <LayoutDashboard className="h-4 w-4" /> : <User className="h-4 w-4" />}
+                  {user ? "My Account" : "Sign In"}
+                </Link>
+              )}
             </div>
           </div>
         </div>

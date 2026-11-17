@@ -94,13 +94,15 @@ export async function getGalleryImages(limit?: number) {
 export async function getTestimonials(limit = 3) {
   return guarded(
     () =>
+      // Only owner-curated testimonials are shown publicly — seeded sample
+      // content (source = 'SAMPLE') is never displayed as real customer reviews.
       prisma.testimonial.findMany({
-        where: { isVisible: true },
+        where: { isVisible: true, source: "OWNER" },
         orderBy: { createdAt: "desc" },
         take: limit,
       }),
     "getTestimonials",
-    DEFAULT_TESTIMONIALS.slice(0, limit)
+    [] // never fall back to sample reviews
   );
 }
 

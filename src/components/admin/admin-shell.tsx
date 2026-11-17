@@ -63,7 +63,13 @@ function pageTitleFor(pathname: string): string {
   return match ? PAGE_TITLES[match] : "Dashboard";
 }
 
-export function AdminShell({ children }: { children: React.ReactNode }) {
+export function AdminShell({
+  children,
+  logoUrl,
+}: {
+  children: React.ReactNode;
+  logoUrl?: string | null;
+}) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -149,7 +155,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-charcoal text-cream lg:flex">
         <div className="border-b border-white/10 p-4">
           <div className="rounded-xl bg-cream/10 p-2">
-            <LogoWordmark compact />
+            <LogoWordmark compact logoUrl={logoUrl} />
           </div>
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto p-3" aria-label="Admin">

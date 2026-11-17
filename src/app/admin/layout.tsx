@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { safeAuth } from "@/lib/auth";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { getSalonProfile } from "@/lib/salon";
 
 export const metadata: Metadata = { title: "Admin Panel" };
 
@@ -18,5 +19,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const role = (session.user as { role?: string }).role;
   if (!["OWNER", "ADMIN", "MANAGER", "RECEPTIONIST"].includes(role ?? "")) redirect("/auth/login");
 
-  return <AdminShell>{children}</AdminShell>;
+  const salon = await getSalonProfile();
+
+  return <AdminShell logoUrl={salon.logoUrl}>{children}</AdminShell>;
 }

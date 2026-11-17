@@ -2,6 +2,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { WhatsAppFloat } from "@/components/whatsapp-float";
 import { safeAuth } from "@/lib/auth";
+import { getSalonProfile } from "@/lib/salon";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
  * uses its own admin shell instead.
  */
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
-  const session = await safeAuth();
+  const [session, salon] = await Promise.all([safeAuth(), getSalonProfile()]);
   const role = (session?.user as { role?: string } | undefined)?.role;
 
   return (
@@ -22,7 +23,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       >
         Skip to content
       </a>
-      <SiteHeader user={role ? { role } : null} />
+      <SiteHeader user={role ? { role } : null} openingHours={salon.openingHours} logoUrl={salon.logoUrl} />
       <main id="main-content" className="flex-1">
         {children}
       </main>

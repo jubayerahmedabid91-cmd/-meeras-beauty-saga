@@ -726,13 +726,17 @@ model TeamProfile {
 }
 
 model Testimonial {
-  id        String  @id @default(cuid())
-  name      String
-  rating    Int     @default(5)
-  comment   String
-  imageUrl  String? @map("image_url")
-  isVisible Boolean @default(true) @map("is_visible")
-  createdAt DateTime @default(now()) @map("created_at")
+  id         String   @id @default(cuid())
+  name       String
+  rating     Int
+  comment    String
+  imageUrl   String?  @map("image_url")
+  // OWNER = curated by the salon (real client feedback submitted to the owner).
+  // SAMPLE = seeded demo content; never shown publicly as real customer reviews.
+  source     String   @default("OWNER")
+  reviewId   String?  @unique @map("review_id")
+  isVisible  Boolean  @default(true) @map("is_visible")
+  createdAt  DateTime @default(now()) @map("created_at")
 
   @@map("testimonials")
 }

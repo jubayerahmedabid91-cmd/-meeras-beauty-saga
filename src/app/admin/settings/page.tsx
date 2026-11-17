@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { Settings, Building2, Clock, Globe } from "lucide-react";
+import { Settings, Building2, Clock, Globe, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { BusinessSettingsForm } from "@/components/admin/business-settings-form";
 
 export const metadata: Metadata = { title: "Settings" };
+
+const PLACEHOLDER = /to be provided|placeholder|tbd/i;
 
 export default async function AdminSettingsPage() {
   const settings = await prisma.businessSetting.findMany();
@@ -15,6 +17,10 @@ export default async function AdminSettingsPage() {
       map[s.key] = s.value;
     }
   }
+
+  const rawWhatsapp = String(map.whatsapp ?? "").trim();
+  const whatsappConfigured =
+    rawWhatsapp.length >= 8 && !PLACEHOLDER.test(rawWhatsapp) && /\d{8,}/.test(rawWhatsapp);
 
   return (
     <div className="space-y-6">
@@ -36,6 +42,10 @@ export default async function AdminSettingsPage() {
               <p className="text-xs text-muted">Name, address, contact details</p>
             </div>
           </div>
+          <p className="mt-3 rounded-xl bg-pastel-pink px-3 py-2 text-xs text-muted">
+            Saved values appear across the public website (header hours strip, footer, contact
+            section, tracking page). Leave a field empty to hide it from the website.
+          </p>
           <div className="mt-4">
             <BusinessSettingsForm
               initial={{
@@ -76,6 +86,29 @@ export default async function AdminSettingsPage() {
         <div className="card p-6">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-gold/10 text-rose-gold">
+              <Sparkles className="h-5 w-5" />
+            </span>
+            <div>
+              <h2 className="text-lg font-bold">Brand &amp; Logo</h2>
+              <p className="text-xs text-muted">Logo shown in the header and footer</p>
+            </div>
+          </div>
+          <p className="mt-3 rounded-xl bg-pastel-pink px-3 py-2 text-xs text-muted">
+            Paste the URL of your logo file (e.g. <span className="font-mono">/assets/logo.png</span>{" "}
+            after replacing that file, or an external image URL). Leave empty to use the official
+            brand mark.
+          </p>
+          <div className="mt-4">
+            <BusinessSettingsForm
+              initial={{ logo_url: String(map.logo_url ?? "") }}
+              keys={["logo_url"]}
+            />
+          </div>
+        </div>
+
+        <div className="card p-6">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-gold/10 text-rose-gold">
               <Clock className="h-5 w-5" />
             </span>
             <div>
@@ -97,32 +130,32 @@ export default async function AdminSettingsPage() {
           </div>
         </div>
 
-        <div className="card p-6">
+        <div className="card p-6 lg:col-span-2">
           <div className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-gold/10 text-rose-gold">
               <Settings className="h-5 w-5" />
             </span>
             <div>
               <h2 className="text-lg font-bold">Integrations</h2>
-              <p className="text-xs text-muted">Email, WhatsApp, payments, AI</p>
+              <p className="text-xs text-muted">Current configuration status — nothing is faked</p>
             </div>
           </div>
           <ul className="mt-4 space-y-2 text-sm">
             <li className="flex justify-between">
-              <span className="text-muted">Email / SMTP</span>
-              <span className="font-semibold">Not configured</span>
+              <span className="text-muted">WhatsApp</span>
+              <span className={whatsappConfigured ? "font-semibold text-emerald-600" : "font-semibold"}>
+                {whatsappConfigured
+                  ? `Configured (${String(map.whatsapp)})`
+                  : "Not configured — set the WhatsApp number above"}
+              </span>
             </li>
             <li className="flex justify-between">
-              <span className="text-muted">WhatsApp</span>
-              <span className="font-semibold">Not configured</span>
+              <span className="text-muted">Email / SMTP</span>
+              <span className="font-semibold">Not configured — requires SMTP credentials</span>
             </li>
             <li className="flex justify-between">
               <span className="text-muted">Online payments</span>
-              <span className="font-semibold">Not configured</span>
-            </li>
-            <li className="flex justify-between">
-              <span className="text-muted">AI features</span>
-              <span className="font-semibold">Disabled</span>
+              <span className="font-semibold">Not configured — requires a payment provider account</span>
             </li>
           </ul>
         </div>

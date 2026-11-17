@@ -29,7 +29,7 @@ export function BusinessSettingsForm({
       const res = await fetch("/api/admin/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keys, values: payload }),
+        body: JSON.stringify({ keys, values: payload, nestedKey }),
       });
       if (!res.ok) throw new Error();
       setStatus("saved");

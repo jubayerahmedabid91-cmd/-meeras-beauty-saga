@@ -42,6 +42,16 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local test / debug artifacts (never commit)
+cookies.txt
+home.html
+c3.txt
+c4.txt
+csrf*.json
+login*.json
+session*.json
+*.log
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

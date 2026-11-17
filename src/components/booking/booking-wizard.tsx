@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, Clock, User, CheckCircle, Loader2, ArrowLeft, ArrowRight, Sparkles, PackageSearch } from "lucide-react";
-import { cn, formatMoney, bookingNumber } from "@/lib/utils";
+import { Calendar, Clock, User, CheckCircle, Loader2, ArrowLeft, ArrowRight, Sparkles, PackageSearch, Star, Shield, Tag } from "lucide-react";
+import { cn, formatMoney } from "@/lib/utils";
 
 type ServiceOption = {
   id: string;
@@ -67,6 +67,7 @@ export function BookingWizard({
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponMessage, setCouponMessage] = useState("");
   const [couponChecking, setCouponChecking] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Slot availability follows the number of active specialists: one booking
   // per specialist per time slot.
@@ -122,6 +123,26 @@ export function BookingWizard({
     setCouponMessage("");
   }, [kind, selectedService, selectedPackage]);
 
+  function validateStep(): boolean {
+    const newErrors: Record<string, string> = {};
+    if (step === 0) {
+      if (kind === "service" && !selectedService) newErrors.service = "Please select a service";
+      if (kind === "package" && !selectedPackage) newErrors.package = "Please select a package";
+    }
+    if (step === 1) {
+      if (!date) newErrors.date = "Please select a date";
+      if (!time) newErrors.time = "Please select a time";
+    }
+    if (step === 2) {
+      if (!form.name.trim()) newErrors.name = "Full name is required";
+      if (!form.email.trim()) newErrors.email = "Email is required";
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Invalid email format";
+      if (!form.phone.trim()) newErrors.phone = "Phone number is required";
+    }
+    setFieldErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
   function canContinue() {
     if (step === 0) return kind === "service" ? Boolean(selectedService) : Boolean(selectedPackage);
     if (step === 1) return Boolean(date && time);
@@ -130,6 +151,7 @@ export function BookingWizard({
   }
 
   async function submit() {
+    if (!validateStep()) return;
     setSubmitting(true);
     setError("");
     try {
@@ -188,14 +210,16 @@ export function BookingWizard({
 
   if (confirmed) {
     return (
-      <div className="card mx-auto max-w-lg p-10 text-center">
-        <CheckCircle className="mx-auto h-16 w-16 text-emerald-500" />
+      <div className="card-luxury mx-auto max-w-lg p-10 text-center animate-fade-in-scale">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-500 animate-pulse-glow">
+          <CheckCircle className="h-8 w-8" />
+        </div>
         <h2 className="mt-4 text-2xl font-bold">Booking received</h2>
         <p className="mt-2 text-sm text-muted">
           Your booking reference is <span className="font-bold text-charcoal">{confirmed}</span>.
           Our team will confirm your appointment shortly.
         </p>
-        <div className="mt-6 rounded-xl bg-pastel-pink p-4 text-left text-sm">
+        <div className="mt-6 rounded-xl bg-pastel-pink p-4 text-left text-sm animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
           <p><span className="font-semibold">Service:</span> {selectedItem?.name}</p>
           <p className="mt-1"><span className="font-semibold">Date:</span> {date}</p>
           <p className="mt-1"><span className="font-semibold">Time:</span> {time}</p>
@@ -224,17 +248,17 @@ export function BookingWizard({
 
   return (
     <div className="mx-auto max-w-3xl">
-      {/* Step indicator */}
-      <ol className="mb-8 flex items-center justify-between">
+      {/* Step indicator with luxury styling */}
+      <ol className="mb-8 flex items-center justify-between stagger-entrance">
         {STEPS.map((label, i) => (
           <li key={label} className="flex flex-1 items-center gap-2">
             <span
               className={cn(
-                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold transition",
+                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-all duration-300",
                 i < step
-                  ? "bg-emerald-500 text-white"
+                  ? "bg-emerald-500 text-white shadow-[0_0_12px_rgba(16,185,129,0.4)]"
                   : i === step
-                    ? "bg-rose-gold text-white"
+                    ? "bg-rose-gold text-white shadow-[0_0_12px_rgba(183,110,121,0.4)] animate-pulse-glow"
                     : "bg-charcoal/10 text-muted",
               )}
             >
@@ -243,22 +267,26 @@ export function BookingWizard({
             <span className={cn("hidden text-xs font-semibold sm:block", i === step ? "text-charcoal" : "text-muted")}>
               {label}
             </span>
-            {i < STEPS.length - 1 && <span className="mx-2 h-px flex-1 bg-charcoal/10" />}
+            {i < STEPS.length - 1 && (
+              <span className={cn("mx-2 h-px flex-1 transition-colors", i < step ? "bg-emerald-500" : "bg-charcoal/10")} />
+            )}
           </li>
         ))}
       </ol>
 
       {/* Step 0: service / package */}
       {step === 0 && (
-        <div className="space-y-6">
+        <div className="space-y-6 stagger-entrance">
           <div className="flex gap-2">
             {(["service", "package"] as const).map((k) => (
               <button
                 key={k}
                 onClick={() => setKind(k)}
                 className={cn(
-                  "rounded-full px-5 py-2.5 text-sm font-semibold capitalize transition",
-                  kind === k ? "bg-rose-gold text-white" : "bg-pastel-pink text-charcoal hover:bg-rose-gold-light",
+                  "rounded-full px-5 py-2.5 text-sm font-semibold capitalize transition-all duration-200",
+                  kind === k
+                    ? "bg-rose-gold text-white shadow-[0_4px_14px_rgba(183,110,121,0.3)]"
+                    : "bg-pastel-pink text-charcoal hover:bg-rose-gold-light hover:shadow-soft",
                 )}
               >
                 {k === "service" ? "Single Service" : "Package"}
@@ -273,12 +301,14 @@ export function BookingWizard({
                   key={s.id}
                   onClick={() => setSelectedService(s.slug)}
                   className={cn(
-                    "card flex items-center justify-between gap-3 p-4 text-left transition",
-                    selectedService === s.slug ? "border-rose-gold ring-2 ring-rose-gold/30" : "hover:border-rose-gold/40",
+                    "card-luxury flex items-center justify-between gap-3 p-4 text-left transition-all duration-300",
+                    selectedService === s.slug
+                      ? "border-rose-gold ring-2 ring-rose-gold/30 bg-rose-gold/5"
+                      : "hover:border-rose-gold/40 hover:shadow-card",
                   )}
                 >
                   <div>
-                    <p className="text-xs text-rose-gold">{s.categoryName}</p>
+                    <p className="text-xs text-rose-gold font-medium">{s.categoryName}</p>
                     <p className="font-semibold">{s.name}</p>
                     <p className="mt-1 text-xs text-muted">{s.durationMin} min</p>
                   </div>
@@ -293,8 +323,10 @@ export function BookingWizard({
                   key={p.id}
                   onClick={() => setSelectedPackage(p.slug)}
                   className={cn(
-                    "card flex items-center justify-between gap-3 p-4 text-left transition",
-                    selectedPackage === p.slug ? "border-rose-gold ring-2 ring-rose-gold/30" : "hover:border-rose-gold/40",
+                    "card-luxury flex items-center justify-between gap-3 p-4 text-left transition-all duration-300",
+                    selectedPackage === p.slug
+                      ? "border-rose-gold ring-2 ring-rose-gold/30 bg-rose-gold/5"
+                      : "hover:border-rose-gold/40 hover:shadow-card",
                   )}
                 >
                   <div>
@@ -311,7 +343,7 @@ export function BookingWizard({
 
       {/* Step 1: date & time */}
       {step === 1 && (
-        <div className="space-y-6">
+        <div className="space-y-6 stagger-entrance">
           <div>
             <label className="field-label flex items-center gap-2">
               <Calendar className="h-4 w-4 text-rose-gold" /> Select date
@@ -321,9 +353,10 @@ export function BookingWizard({
               min={minDate}
               max={maxDate}
               value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="field-input"
+              onChange={(e) => { setDate(e.target.value); setTime(""); }}
+              className={cn("field-input", fieldErrors.date && "border-rose-500 focus:border-rose-500 focus:ring-rose-500/20")}
             />
+            {fieldErrors.date && <p className="mt-1 text-xs text-rose-600">{fieldErrors.date}</p>}
             <p className="mt-1 text-xs text-muted">Bookings open 60 days in advance.</p>
           </div>
 
@@ -343,12 +376,12 @@ export function BookingWizard({
                     disabled={full}
                     title={full ? "All specialists are booked" : info ? `${info.remaining} left` : undefined}
                     className={cn(
-                      "rounded-xl border px-3 py-2 text-sm font-medium transition",
+                      "rounded-xl border px-3 py-2.5 text-sm font-medium transition-all duration-200",
                       full
                         ? "cursor-not-allowed border-charcoal/10 bg-charcoal/5 text-muted line-through"
                         : time === slot
-                          ? "border-rose-gold bg-rose-gold text-white"
-                          : "border-charcoal/10 bg-white text-charcoal hover:border-rose-gold",
+                          ? "border-rose-gold bg-rose-gold text-white shadow-[0_4px_14px_rgba(183,110,121,0.3)]"
+                          : "border-charcoal/10 bg-white text-charcoal hover:border-rose-gold hover:shadow-soft",
                     )}
                   >
                     {slot}
@@ -358,11 +391,12 @@ export function BookingWizard({
               })}
             </div>
             {availability && (
-              <p className="text-xs text-muted">
+              <p className="mt-2 text-xs text-muted">
                 {availability.capacity} specialist{availability.capacity === 1 ? "" : "s"} available per
                 time slot. Slots marked as struck through are fully booked.
               </p>
             )}
+            {fieldErrors.time && <p className="mt-1 text-xs text-rose-600">{fieldErrors.time}</p>}
           </div>
 
           <div>
@@ -383,25 +417,27 @@ export function BookingWizard({
 
       {/* Step 2: customer details */}
       {step === 2 && (
-        <div className="space-y-4">
+        <div className="space-y-4 stagger-entrance">
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <label className="field-label">Full name</label>
               <input
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="field-input"
+                className={cn("field-input", fieldErrors.name && "border-rose-500 focus:border-rose-500 focus:ring-rose-500/20")}
                 placeholder="Your name"
               />
+              {fieldErrors.name && <p className="mt-1 text-xs text-rose-600">{fieldErrors.name}</p>}
             </div>
             <div>
               <label className="field-label">Phone</label>
               <input
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="field-input"
+                className={cn("field-input", fieldErrors.phone && "border-rose-500 focus:border-rose-500 focus:ring-rose-500/20")}
                 placeholder="Your phone number"
               />
+              {fieldErrors.phone && <p className="mt-1 text-xs text-rose-600">{fieldErrors.phone}</p>}
             </div>
           </div>
           <div>
@@ -410,9 +446,10 @@ export function BookingWizard({
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="field-input"
+              className={cn("field-input", fieldErrors.email && "border-rose-500 focus:border-rose-500 focus:ring-rose-500/20")}
               placeholder="you@example.com"
             />
+            {fieldErrors.email && <p className="mt-1 text-xs text-rose-600">{fieldErrors.email}</p>}
           </div>
           <div>
             <label className="field-label">Notes (optional)</label>
@@ -429,38 +466,45 @@ export function BookingWizard({
 
       {/* Step 3: review */}
       {step === 3 && selectedItem && (
-        <div className="card space-y-4 p-6">
-          <h3 className="text-lg font-bold">Review your booking</h3>
-          <dl className="space-y-3 text-sm">
-            <div className="flex justify-between">
+        <div className="card-luxury space-y-4 p-6 stagger-entrance">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-gold/10 text-rose-gold">
+              <Shield className="h-5 w-5" />
+            </div>
+            <h3 className="text-lg font-bold">Review your booking</h3>
+          </div>
+          <dl className="space-y-3 text-sm divide-y divide-charcoal/5">
+            <div className="flex justify-between py-2">
               <dt className="text-muted">Service</dt>
               <dd className="font-semibold">{selectedItem.name}</dd>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between py-2">
               <dt className="text-muted">Date</dt>
               <dd className="font-semibold">{date}</dd>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between py-2">
               <dt className="text-muted">Time</dt>
               <dd className="font-semibold">{time}</dd>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between py-2">
               <dt className="text-muted">Duration</dt>
               <dd className="font-semibold">{selectedItem.durationMin} min</dd>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between py-2">
               <dt className="text-muted">Specialist</dt>
               <dd className="font-semibold">{staffId ? staff.find((s) => s.id === staffId)?.name : "No preference"}</dd>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between py-2">
               <dt className="text-muted">Estimated total</dt>
-              <dd className="font-semibold">{formatMoney(selectedItem.priceCents)}</dd>
+              <dd className="font-semibold text-rose-gold text-lg">{formatMoney(selectedItem.priceCents)}</dd>
             </div>
           </dl>
 
           {/* Coupon */}
-          <div className="space-y-2 border-t border-charcoal/10 pt-4">
-            <label className="field-label">Promo code (optional)</label>
+          <div className="space-y-2 pt-2">
+            <label className="field-label flex items-center gap-2">
+              <Tag className="h-4 w-4 text-rose-gold" /> Promo code (optional)
+            </label>
             <div className="flex gap-2">
               <input
                 value={couponCode}
@@ -478,12 +522,12 @@ export function BookingWizard({
               </button>
             </div>
             {couponMessage && (
-              <p className="text-xs font-medium text-rose-gold">{couponMessage}</p>
+              <p className="text-xs font-medium text-rose-gold animate-fade-in-up">{couponMessage}</p>
             )}
           </div>
 
           {couponDiscount > 0 && (
-            <div className="space-y-1.5 rounded-xl bg-pastel-pink p-3 text-sm">
+            <div className="space-y-1.5 rounded-xl bg-pastel-pink p-3 text-sm animate-fade-in-scale">
               <div className="flex justify-between">
                 <span className="text-muted">Subtotal</span>
                 <span>{formatMoney(selectedItem.priceCents)}</span>
@@ -492,7 +536,7 @@ export function BookingWizard({
                 <span>Discount</span>
                 <span>-{formatMoney(couponDiscount)}</span>
               </div>
-              <div className="flex justify-between border-t border-charcoal/10 pt-1.5 font-bold">
+              <div className="flex justify-between border-t border-charcoal/10 pt-1.5 font-bold text-lg">
                 <span>Total</span>
                 <span className="text-rose-gold">
                   {formatMoney(Math.max(0, selectedItem.priceCents - couponDiscount))}
@@ -509,7 +553,9 @@ export function BookingWizard({
       )}
 
       {error && (
-        <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">{error}</p>
+        <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 animate-fade-in-up">
+          {error}
+        </p>
       )}
 
       {/* Navigation */}
@@ -524,7 +570,11 @@ export function BookingWizard({
         </button>
 
         {step < 3 ? (
-          <button onClick={() => setStep((s) => s + 1)} disabled={!canContinue()} className="btn-primary">
+          <button
+            onClick={() => { if (validateStep()) setStep((s) => s + 1); }}
+            disabled={!canContinue()}
+            className="btn-primary"
+          >
             Continue
             <ArrowRight className="h-4 w-4" />
           </button>

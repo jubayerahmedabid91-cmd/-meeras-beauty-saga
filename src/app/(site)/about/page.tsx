@@ -7,7 +7,7 @@ import { Reveal } from "@/components/reveal";
 import { SectionHeading } from "@/components/section-heading";
 import { getTeamProfiles, getServices } from "@/lib/data";
 import { ServiceCard } from "@/components/cards/service-card";
-import { BRAND } from "@/lib/brand";
+import { getSalonProfile } from "@/lib/salon";
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -21,7 +21,13 @@ const VALUES = [
 ];
 
 export default async function AboutPage() {
-  const [team, services] = await Promise.all([getTeamProfiles(), getServices(3)]);
+  const [team, services, salon] = await Promise.all([getTeamProfiles(), getServices(3), getSalonProfile()]);
+
+  const contactInfo = [
+    { title: "Address", text: salon.address },
+    { title: "Phone / WhatsApp", text: [salon.phone, salon.whatsapp].filter(Boolean).join(" · ") || "Not configured" },
+    { title: "Opening Hours", text: salon.openingHours || "Not configured" },
+  ].filter((item) => item.text !== "Not configured");
 
   return (
     <>
@@ -76,7 +82,7 @@ export default async function AboutPage() {
         <div className="container-site">
           <SectionHeading
             eyebrow="What Drives Us"
-            title="Our Mission &amp; Values"
+            title="Our Mission & Values"
             subtitle="We aim to deliver premium, personalised beauty experiences that are consistent, honest and caring."
           />
           <div className="mt-10 grid gap-6 md:grid-cols-3">
@@ -138,20 +144,22 @@ export default async function AboutPage() {
             title="Find Meera's"
             subtitle="We would love to welcome you. Reach out or drop by during opening hours."
           />
-          <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {[
-              { title: "Address", text: BRAND.contact.address },
-              { title: "Phone / WhatsApp", text: `${BRAND.contact.phone} · ${BRAND.contact.whatsapp}` },
-              { title: "Opening Hours", text: BRAND.contact.hours },
-            ].map((item, i) => (
-              <Reveal key={item.title} delay={i * 0.06}>
-                <div className="card card-hover h-full p-6">
-                  <h3 className="text-base font-bold">{item.title}</h3>
-                  <p className="mt-2 text-sm text-muted">{item.text}</p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
+          {contactInfo.length === 0 ? (
+            <Reveal className="mt-10 text-center text-muted">
+              Contact details will appear here once configured in the admin panel.
+            </Reveal>
+          ) : (
+            <div className="mt-10 grid gap-6 md:grid-cols-3">
+              {contactInfo.map((item, i) => (
+                <Reveal key={item.title} delay={i * 0.06}>
+                  <div className="card card-hover h-full p-6">
+                    <h3 className="text-base font-bold">{item.title}</h3>
+                    <p className="mt-2 text-sm text-muted">{item.text}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          )}
           <Reveal className="mt-10 text-center">
             <Link href="/services" className="btn-primary">
               Explore our services

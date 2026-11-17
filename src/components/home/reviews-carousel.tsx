@@ -30,11 +30,10 @@ export function ReviewsCarousel({ items }: { items: Testimonial[] }) {
   const pages = Math.max(1, Math.ceil(items.length / perView));
   const safeIndex = Math.min(index, pages - 1);
 
-  // Gentle auto-rotation, paused on hover/focus.
   const [paused, setPaused] = useState(false);
   useEffect(() => {
     if (paused || pages <= 1) return;
-    const id = setInterval(() => setIndex((i) => (i + 1) % pages), 6000);
+    const id = setInterval(() => setIndex((i) => (i + 1) % pages), 7000);
     return () => clearInterval(id);
   }, [paused, pages]);
 
@@ -62,29 +61,29 @@ export function ReviewsCarousel({ items }: { items: Testimonial[] }) {
                 <figure
                   key={t.id}
                   className={cn(
-                    "card relative flex h-full flex-col p-6",
+                    "card-luxury relative flex h-full flex-col p-6",
                     i === 0 && "ring-1 ring-rose-gold/20",
                   )}
                 >
-                  <Quote className="absolute right-5 top-5 h-6 w-6 text-rose-gold/15" />
+                  <Quote className="absolute right-5 top-5 h-7 w-7 text-rose-gold/10" />
                   <div
-                    className="flex gap-0.5 text-rose-gold"
+                    className="flex gap-1 text-rose-gold relative z-10"
                     aria-label={`${t.rating} out of 5 stars`}
                   >
                     {Array.from({ length: 5 }).map((_, k) => (
                       <Star
                         key={k}
                         className={cn(
-                          "h-4 w-4",
-                          k < t.rating ? "fill-rose-gold" : "fill-charcoal/10 text-charcoal/10",
+                          "h-4 w-4 transition-transform duration-300",
+                          k < t.rating ? "fill-rose-gold scale-100" : "fill-charcoal/10 text-charcoal/10 scale-80",
                         )}
                       />
                     ))}
                   </div>
-                  <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-charcoal">
+                  <blockquote className="mt-4 flex-1 text-sm leading-relaxed text-charcoal relative z-10">
                     &ldquo;{t.comment}&rdquo;
                   </blockquote>
-                  <figcaption className="mt-5 flex items-center gap-3 border-t border-charcoal/10 pt-4">
+                  <figcaption className="mt-5 flex items-center gap-3 border-t border-charcoal/10 pt-4 relative z-10">
                     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-gold/10 text-sm font-bold text-rose-gold">
                       {t.name.charAt(0).toUpperCase()}
                     </span>

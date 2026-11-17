@@ -123,7 +123,7 @@ export function SiteHeader({
           </Link>
           {user && !accountHref ? null : (
             <Link
-              href={user ? accountHref : "/auth/login"}
+              href={user && accountHref ? accountHref : "/auth/login"}
               className="btn-outline hidden !px-4 !py-2.5 text-xs sm:inline-flex md:text-sm"
             >
               {user ? <LayoutDashboard className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
@@ -203,7 +203,7 @@ export function SiteHeader({
                 Track Booking Status
               </Link>
               {user && !accountHref ? null : (
-                <Link href={user ? accountHref : "/auth/login"} className="btn-dark w-full">
+                <Link href={user && accountHref ? accountHref : "/auth/login"} className="btn-dark w-full">
                   {user ? <LayoutDashboard className="h-4 w-4" /> : <User className="h-4 w-4" />}
                   {user ? "My Account" : "Sign In"}
                 </Link>

@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/badge";
 import { Reveal } from "@/components/reveal";
 import { ServiceCard } from "@/components/cards/service-card";
-import { BRAND } from "@/lib/brand";
+import { getSalonProfile } from "@/lib/salon";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -23,14 +23,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ServiceDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const service = await safeQuery(
-    () =>
-      prisma.service.findUnique({
-        where: { slug },
-        include: { category: true, addons: true },
-      }),
-    null
-  );
+  const [service, salon] = await Promise.all([
+    safeQuery(
+      () =>
+        prisma.service.findUnique({
+          where: { slug },
+          include: { category: true, addons: true },
+        }),
+      null
+    ),
+    getSalonProfile(),
+  ]);
 
   if (!service) notFound();
 
@@ -131,9 +134,11 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                   <li>Please arrive 10 minutes before your appointment.</li>
                   <li>Advance booking is recommended, especially for bridal services.</li>
                   <li>Prices are indicative and final pricing is confirmed during consultation.</li>
-                  <li>
-                    Call us: <span className="font-medium text-charcoal">{BRAND.contact.phone}</span>
-                  </li>
+                  {salon.phone && (
+                    <li>
+                      Call us: <span className="font-medium text-charcoal">{salon.phone}</span>
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>

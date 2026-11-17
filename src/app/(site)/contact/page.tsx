@@ -3,14 +3,24 @@ import { MapPin, Phone, Mail, Clock, MessageCircle } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { Reveal } from "@/components/reveal";
 import { ContactForm } from "@/components/contact-form";
-import { BRAND } from "@/lib/brand";
+import { getSalonProfile } from "@/lib/salon";
 
 export const metadata: Metadata = {
   title: "Contact Us",
   description: "Get in touch with Meera's - The Beauty Saga. Book appointments, ask questions or plan your visit.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const salon = await getSalonProfile();
+
+  const contactItems = [
+    { icon: MapPin, label: "Address", value: salon.address, href: salon.address ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(salon.address)}` : null },
+    { icon: Phone, label: "Phone", value: salon.phone, href: salon.phone ? `tel:${salon.phone.replace(/\s/g, "")}` : null },
+    { icon: MessageCircle, label: "WhatsApp", value: salon.whatsapp, href: salon.whatsapp ? `https://wa.me/${salon.whatsappDigits}` : null },
+    { icon: Mail, label: "Email", value: salon.email, href: salon.email ? `mailto:${salon.email}` : null },
+    { icon: Clock, label: "Opening Hours", value: salon.openingHours, href: null },
+  ].filter((item) => Boolean(item.value));
+
   return (
     <>
       <PageHeader
@@ -28,25 +38,32 @@ export default function ContactPage() {
               Call, message or visit us during opening hours. For appointments, online booking is the
               fastest option.
             </p>
-            <ul className="mt-8 space-y-5">
-              {[
-                { icon: MapPin, label: "Address", value: BRAND.contact.address },
-                { icon: Phone, label: "Phone", value: BRAND.contact.phone },
-                { icon: MessageCircle, label: "WhatsApp", value: BRAND.contact.whatsapp },
-                { icon: Mail, label: "Email", value: BRAND.contact.email },
-                { icon: Clock, label: "Opening Hours", value: BRAND.contact.hours },
-              ].map((item) => (
-                <li key={item.label} className="flex gap-4">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-gold/10 text-rose-gold">
-                    <item.icon className="h-5 w-5" />
-                  </span>
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-muted">{item.label}</p>
-                    <p className="mt-0.5 text-sm font-medium text-charcoal">{item.value}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
+            {contactItems.length === 0 ? (
+              <div className="mt-8 rounded-xl bg-pastel-pink p-6 text-center text-sm text-muted">
+                <p>Contact details will appear here once configured in the admin panel.</p>
+                <p className="mt-2">Use the booking form for appointments in the meantime.</p>
+              </div>
+            ) : (
+              <ul className="mt-8 space-y-5">
+                {contactItems.map((item) => (
+                  <li key={item.label} className="flex gap-4">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-rose-gold/10 text-rose-gold">
+                      <item.icon className="h-5 w-5" />
+                    </span>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted">{item.label}</p>
+                      {item.href ? (
+                        <a href={item.href} className="mt-0.5 text-sm font-medium text-charcoal hover:text-rose-gold transition">
+                          {item.value}
+                        </a>
+                      ) : (
+                        <p className="mt-0.5 text-sm font-medium text-charcoal">{item.value}</p>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
 
           <Reveal className="lg:col-span-3">

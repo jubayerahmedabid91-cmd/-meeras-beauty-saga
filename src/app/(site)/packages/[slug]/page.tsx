@@ -9,7 +9,7 @@ import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/badge";
 import { Reveal } from "@/components/reveal";
 import { PackageCard } from "@/components/cards/package-card";
-import { BRAND } from "@/lib/brand";
+import { getSalonProfile } from "@/lib/salon";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -20,14 +20,17 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function PackageDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const pkg = await safeQuery(
-    () =>
-      prisma.package.findUnique({
-        where: { slug },
-        include: { items: { include: { service: true } } },
-      }),
-    null
-  );
+  const [pkg, salon] = await Promise.all([
+    safeQuery(
+      () =>
+        prisma.package.findUnique({
+          where: { slug },
+          include: { items: { include: { service: true } } },
+        }),
+      null
+    ),
+    getSalonProfile(),
+  ]);
 
   if (!pkg) notFound();
 
@@ -112,7 +115,7 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
               </div>
 
               <div className="card p-6">
-                <h2 className="text-lg font-bold">What&rsquo;s included</h2>
+                <h2 className="text-lg font-bold">What's included</h2>
                 {pkg.items.length === 0 ? (
                   <p className="mt-3 text-sm text-muted">Package contents will be listed here once configured.</p>
                 ) : (
@@ -122,7 +125,7 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
                         <span className="flex items-center gap-2 text-sm">
                           <Check className="h-4 w-4 text-rose-gold" />
                           {item.service.name}
-                          {item.quantity > 1 && <span className="text-muted">× {item.quantity}</span>}
+                          {item.quantity > 1 && <span className="text-muted">x {item.quantity}</span>}
                         </span>
                         <span className="text-sm font-semibold text-rose-gold">
                           {formatMoney(item.service.priceCents)}
@@ -134,14 +137,16 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
               </div>
 
               <div className="card p-6">
-                <h2 className="text-lg font-bold">Validity &amp; terms</h2>
+                <h2 className="text-lg font-bold">Validity & terms</h2>
                 <ul className="mt-3 space-y-2 text-sm text-muted">
                   <li>Valid for {pkg.validityDays} days from the date of booking.</li>
                   <li>Advance booking is required and subject to availability.</li>
                   {pkg.terms && <li>{pkg.terms}</li>}
-                  <li>
-                    Call us: <span className="font-medium text-charcoal">{BRAND.contact.phone}</span>
-                  </li>
+                  {salon.phone && (
+                    <li>
+                      Call us: <span className="font-medium text-charcoal">{salon.phone}</span>
+                    </li>
+                  )}
                 </ul>
               </div>
             </div>

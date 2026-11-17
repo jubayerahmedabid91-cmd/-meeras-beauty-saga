@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/badge";
+import { CouponRowActions } from "@/components/admin/coupon-row-actions";
 import { formatMoney } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Coupons" };
@@ -36,6 +37,7 @@ export default async function AdminCouponsPage() {
                 <th className="p-4">Value</th>
                 <th className="p-4">Uses</th>
                 <th className="p-4">Status</th>
+                <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-charcoal/5">
@@ -52,6 +54,9 @@ export default async function AdminCouponsPage() {
                   </td>
                   <td className="p-4">
                     <Badge tone={c.isActive ? "rose" : "outline"}>{c.isActive ? "Active" : "Inactive"}</Badge>
+                  </td>
+                  <td className="p-4">
+                    <CouponRowActions id={c.id} isActive={c.isActive} />
                   </td>
                 </tr>
               ))}

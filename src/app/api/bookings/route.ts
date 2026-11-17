@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { bookingNumber, referralCode } from "@/lib/utils";
+import { evaluateCoupon, normalizeCode } from "@/lib/coupons";
 
 const schema = z.object({
   kind: z.enum(["service", "package"]),
@@ -10,6 +11,7 @@ const schema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   time: z.string().regex(/^\d{2}:\d{2}$/),
   staffId: z.string().nullable().optional(),
+  couponCode: z.string().max(30).optional(),
   customer: z.object({
     name: z.string().min(2).max(100),
     email: z.string().email(),
@@ -26,7 +28,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Please check your booking details." }, { status: 400 });
     }
 
-    const { kind, serviceSlug, packageSlug, date, time, staffId, customer } = parsed.data;
+    const { kind, serviceSlug, packageSlug, date, time, staffId, couponCode, customer } = parsed.data;
 
     // Resolve the booked item.
     let serviceId: string | null = null;
@@ -49,6 +51,21 @@ export async function POST(request: Request) {
       durationMin = pkg.durationMin;
       priceCents = pkg.priceCents - pkg.discountCents;
       name = pkg.name;
+    }
+
+    // Apply a coupon, if one was supplied. The discount is recomputed here so
+    // a tampered client can never invent a discount.
+    const code = normalizeCode(couponCode);
+    let discountCents = 0;
+    let appliedCouponCode: string | null = null;
+    if (code) {
+      const coupon = await prisma.coupon.findUnique({ where: { code } });
+      const result = evaluateCoupon(coupon, priceCents);
+      if (!result.ok) {
+        return NextResponse.json({ error: result.reason }, { status: 400 });
+      }
+      discountCents = result.discountCents;
+      appliedCouponCode = result.coupon.code;
     }
 
     // Build start/end timestamps in the salon timezone.
@@ -151,13 +168,22 @@ export async function POST(request: Request) {
         endsAt,
         durationMin,
         subtotalCents: priceCents,
-        totalCents: priceCents,
+        discountCents,
+        totalCents: priceCents - discountCents,
         notes: customer.notes || null,
         items: serviceId
           ? { create: [{ serviceId, name, quantity: 1, priceCents }] }
           : undefined,
       },
     });
+
+    // Count the coupon use so max-uses limits are enforced.
+    if (appliedCouponCode) {
+      await prisma.coupon.update({
+        where: { code: appliedCouponCode },
+        data: { usedCount: { increment: 1 } },
+      });
+    }
 
     return NextResponse.json({ ok: true, bookingNumber: booking.bookingNumber });
   } catch (error) {

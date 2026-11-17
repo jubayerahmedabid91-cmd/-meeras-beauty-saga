@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { roleHasPermission, type Role } from "@/lib/permissions";
+import { audit } from "@/lib/audit";
 
 const schema = z.object({
   firstName: z.string().min(1).max(50),
@@ -88,6 +89,13 @@ export async function POST(request: Request) {
     },
   });
 
+  await audit({
+    userId: (session.user as { id?: string }).id,
+    action: "staff.created",
+    entity: "staff",
+    metadata: { email: normalizedEmail, role, name: `${firstName} ${lastName}` },
+  });
+
   return NextResponse.json({ ok: true });
 }
 
@@ -152,6 +160,14 @@ export async function PUT(request: Request) {
     include: { user: true },
   });
 
+  await audit({
+    userId: (session.user as { id?: string }).id,
+    action: "staff.updated",
+    entity: "staff",
+    entityId: staffId,
+    metadata: { email: staff.user.email, changes: Object.keys(updates) },
+  });
+
   return NextResponse.json({ ok: true });
 }
 
@@ -185,6 +201,14 @@ export async function DELETE(request: Request) {
 
   // Deleting the user cascades to the staff profile.
   await prisma.user.delete({ where: { id: staff.userId } });
+
+  await audit({
+    userId: (session.user as { id?: string }).id,
+    action: "staff.deleted",
+    entity: "staff",
+    entityId: staffId,
+    metadata: { email: staff.user.email, role: staff.user.role },
+  });
 
   return NextResponse.json({ ok: true });
 }

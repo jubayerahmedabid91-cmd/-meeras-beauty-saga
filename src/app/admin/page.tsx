@@ -1,13 +1,38 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Calendar, Users, CreditCard, Clock, CheckCircle, XCircle, ArrowRight } from "lucide-react";
+import { Calendar, Users, CreditCard, Clock, CheckCircle, XCircle, ArrowRight, Banknote, TrendingUp, CalendarDays, UserCheck } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatMoney, formatDate, formatTime } from "@/lib/utils";
 import { StatusBadge } from "@/components/badge";
 import { Reveal } from "@/components/reveal";
 import { EmptyState } from "@/components/empty-state";
+import { RevenueChart, type TrendPoint } from "@/components/admin/revenue-chart";
 
 export const metadata: Metadata = { title: "Admin Dashboard" };
+
+type TrendRow = { bookedAt: Date; totalCents: number; status: string };
+
+/** Buckets the last 14 days into a per-day revenue / booking trend. */
+function buildTrend(rows: TrendRow[]): TrendPoint[] {
+  const days: TrendPoint[] = [];
+  const now = new Date();
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(now);
+    d.setHours(0, 0, 0, 0);
+    d.setDate(d.getDate() - i);
+    const next = new Date(d);
+    next.setDate(next.getDate() + 1);
+    const inDay = rows.filter((r) => r.bookedAt >= d && r.bookedAt < next);
+    days.push({
+      label: `${d.getDate()}/${d.getMonth() + 1}`,
+      revenue: inDay
+        .filter((r) => r.status !== "CANCELLED")
+        .reduce((sum, r) => sum + r.totalCents, 0),
+      bookings: inDay.length,
+    });
+  }
+  return days;
+}
 
 export default async function AdminDashboardPage() {
   const today = new Date();
@@ -26,6 +51,10 @@ export default async function AdminDashboardPage() {
     revenueAgg,
     upcomingBookings,
     recentBookings,
+    todayRevenueAgg,
+    monthRevenueAgg,
+    activeStaff,
+    trendRows,
   ] = await Promise.all([
     prisma.booking.count(),
     prisma.booking.count({ where: { startsAt: { gte: today, lt: tomorrow } } }),
@@ -46,17 +75,55 @@ export default async function AdminDashboardPage() {
       take: 6,
       include: { customer: true, service: true, package: true },
     }),
+    prisma.payment.aggregate({
+      where: { status: "PAID", paidAt: { gte: today, lt: tomorrow } },
+      _sum: { amountCents: true },
+    }),
+    prisma.payment.aggregate({
+      where: {
+        status: "PAID",
+        paidAt: { gte: new Date(today.getFullYear(), today.getMonth(), 1) },
+      },
+      _sum: { amountCents: true },
+    }),
+    prisma.staff.count({ where: { isActive: true, user: { isActive: true } } }),
+    prisma.booking.findMany({
+      where: { bookedAt: { gte: new Date(Date.now() - 13 * 86_400_000) } },
+      select: { bookedAt: true, totalCents: true, status: true },
+    }),
   ]);
 
-  const stats = [
-    { label: "Total bookings", value: totalBookings, icon: Calendar, tone: "text-rose-gold bg-rose-gold/10" },
-    { label: "Today", value: todayBookings, icon: Clock, tone: "text-sky-600 bg-sky-100" },
-    { label: "Pending", value: pendingBookings, icon: Clock, tone: "text-amber-600 bg-amber-100" },
-    { label: "Confirmed", value: confirmedBookings, icon: CheckCircle, tone: "text-emerald-600 bg-emerald-100" },
-    { label: "Completed", value: completedBookings, icon: CheckCircle, tone: "text-indigo-600 bg-indigo-100" },
-    { label: "Cancelled", value: cancelledBookings, icon: XCircle, tone: "text-rose-600 bg-rose-100" },
-    { label: "Customers", value: totalCustomers, icon: Users, tone: "text-violet-600 bg-violet-100" },
-    { label: "Revenue", value: formatMoney(revenueAgg._sum.amountCents ?? 0), icon: CreditCard, tone: "text-emerald-600 bg-emerald-100" },
+  const trend: TrendPoint[] = buildTrend(trendRows);
+
+  const kpis = [
+    {
+      label: "Today's Revenue",
+      value: formatMoney(todayRevenueAgg._sum.amountCents ?? 0),
+      icon: Banknote,
+      tone: "text-emerald-600 bg-emerald-100",
+      hint: `${todayBookings} booking${todayBookings === 1 ? "" : "s"} today`,
+    },
+    {
+      label: "Monthly Revenue",
+      value: formatMoney(monthRevenueAgg._sum.amountCents ?? 0),
+      icon: TrendingUp,
+      tone: "text-rose-gold bg-rose-gold/10",
+      hint: "Paid appointments this month",
+    },
+    {
+      label: "Total Bookings",
+      value: totalBookings,
+      icon: CalendarDays,
+      tone: "text-sky-600 bg-sky-100",
+      hint: `${pendingBookings} pending · ${confirmedBookings} confirmed`,
+    },
+    {
+      label: "Active Staff",
+      value: activeStaff,
+      icon: UserCheck,
+      tone: "text-violet-600 bg-violet-100",
+      hint: "Specialists on the roster",
+    },
   ];
 
   return (
@@ -66,21 +133,28 @@ export default async function AdminDashboardPage() {
         <p className="mt-1 text-sm text-muted">Business overview and today's activity.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s, i) => (
-          <Reveal key={s.label} delay={i * 0.04}>
-            <div className="card flex items-center gap-4 p-5 transition hover:-translate-y-0.5 hover:shadow-md">
-              <span className={`flex h-11 w-11 items-center justify-center rounded-xl ${s.tone}`}>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {kpis.map((s, i) => (
+          <Reveal key={s.label} delay={i * 0.05}>
+            <div className="card group flex items-center gap-4 p-5 transition hover:-translate-y-0.5 hover:shadow-md">
+              <span className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${s.tone}`}>
                 <s.icon className="h-5 w-5" />
               </span>
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted truncate">{s.label}</p>
+                <p className="text-[0.65rem] font-semibold uppercase tracking-wider text-muted truncate">
+                  {s.label}
+                </p>
                 <p className="text-xl font-bold leading-tight">{s.value}</p>
+                <p className="mt-0.5 truncate text-[0.65rem] text-muted">{s.hint}</p>
               </div>
             </div>
           </Reveal>
         ))}
       </div>
+
+      <Reveal delay={0.06}>
+        <RevenueChart data={trend} />
+      </Reveal>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Reveal>

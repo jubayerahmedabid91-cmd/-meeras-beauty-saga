@@ -63,6 +63,10 @@ export function BookingWizard({
   const [error, setError] = useState("");
   const [confirmed, setConfirmed] = useState<string | null>(null);
   const [availability, setAvailability] = useState<Availability | null>(null);
+  const [couponCode, setCouponCode] = useState("");
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [couponMessage, setCouponMessage] = useState("");
+  const [couponChecking, setCouponChecking] = useState(false);
 
   // Slot availability follows the number of active specialists: one booking
   // per specialist per time slot.
@@ -112,6 +116,12 @@ export function BookingWizard({
     return d.toISOString().slice(0, 10);
   }, []);
 
+  // A different service or package changes the price, so the discount is cleared.
+  useEffect(() => {
+    setCouponDiscount(0);
+    setCouponMessage("");
+  }, [kind, selectedService, selectedPackage]);
+
   function canContinue() {
     if (step === 0) return kind === "service" ? Boolean(selectedService) : Boolean(selectedPackage);
     if (step === 1) return Boolean(date && time);
@@ -130,6 +140,7 @@ export function BookingWizard({
         date,
         time,
         staffId: staffId || null,
+        couponCode: couponDiscount > 0 ? couponCode.trim().toUpperCase() : undefined,
         customer: form,
       };
       const res = await fetch("/api/bookings", {
@@ -148,6 +159,30 @@ export function BookingWizard({
     } catch {
       setError("Network error. Please try again.");
       setSubmitting(false);
+    }
+  }
+
+  async function applyCoupon() {
+    if (!couponCode.trim()) return;
+    setCouponChecking(true);
+    setCouponMessage("");
+    try {
+      const res = await fetch(
+        `/api/coupons/validate?code=${encodeURIComponent(couponCode.trim())}&subtotalCents=${selectedItem?.priceCents ?? 0}`,
+      );
+      const data = await res.json().catch(() => ({}));
+      if (data.ok) {
+        setCouponDiscount(data.discountCents);
+        setCouponMessage(`Code ${data.code} applied — you save ${formatMoney(data.discountCents)}.`);
+      } else {
+        setCouponDiscount(0);
+        setCouponMessage(data.reason ?? "That code is not valid.");
+      }
+    } catch {
+      setCouponDiscount(0);
+      setCouponMessage("Could not check that code. Please try again.");
+    } finally {
+      setCouponChecking(false);
     }
   }
 
@@ -408,11 +443,54 @@ export function BookingWizard({
               <dt className="text-muted">Specialist</dt>
               <dd className="font-semibold">{staffId ? staff.find((s) => s.id === staffId)?.name : "No preference"}</dd>
             </div>
-            <div className="flex justify-between border-t border-charcoal/10 pt-3">
+            <div className="flex justify-between">
               <dt className="text-muted">Estimated total</dt>
-              <dd className="text-lg font-bold text-rose-gold">{formatMoney(selectedItem.priceCents)}</dd>
+              <dd className="font-semibold">{formatMoney(selectedItem.priceCents)}</dd>
             </div>
           </dl>
+
+          {/* Coupon */}
+          <div className="space-y-2 border-t border-charcoal/10 pt-4">
+            <label className="field-label">Promo code (optional)</label>
+            <div className="flex gap-2">
+              <input
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                placeholder="BRIDAL10"
+                className="field-input flex-1 font-mono uppercase"
+              />
+              <button
+                type="button"
+                onClick={applyCoupon}
+                disabled={couponChecking || !couponCode.trim()}
+                className="btn-outline shrink-0"
+              >
+                {couponChecking ? <Loader2 className="h-4 w-4 animate-spin" /> : "Apply"}
+              </button>
+            </div>
+            {couponMessage && (
+              <p className="text-xs font-medium text-rose-gold">{couponMessage}</p>
+            )}
+          </div>
+
+          {couponDiscount > 0 && (
+            <div className="space-y-1.5 rounded-xl bg-pastel-pink p-3 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted">Subtotal</span>
+                <span>{formatMoney(selectedItem.priceCents)}</span>
+              </div>
+              <div className="flex justify-between font-medium text-emerald-700">
+                <span>Discount</span>
+                <span>-{formatMoney(couponDiscount)}</span>
+              </div>
+              <div className="flex justify-between border-t border-charcoal/10 pt-1.5 font-bold">
+                <span>Total</span>
+                <span className="text-rose-gold">
+                  {formatMoney(Math.max(0, selectedItem.priceCents - couponDiscount))}
+                </span>
+              </div>
+            </div>
+          )}
           <p className="rounded-xl bg-pastel-pink p-3 text-xs text-muted">
             <Sparkles className="mr-1 inline h-3.5 w-3.5 text-rose-gold" />
             Final pricing is confirmed during consultation. This booking is a request and will be

@@ -4,6 +4,7 @@ import { Search, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/badge";
+import { formatMoney } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Customers" };
 
@@ -28,8 +29,22 @@ export default async function AdminCustomersPage({
     include: {
       user: true,
       _count: { select: { bookings: true } },
+      bookings: { select: { totalCents: true, status: true } },
     },
   });
+
+  // VIP = repeat client (3+ bookings) or high lifetime spend.
+  const VIP_BOOKINGS = 3;
+  const VIP_SPEND_CENTS = 20_000;
+
+  const rows = customers.map((c) => {
+    const spend = c.bookings
+      .filter((b) => b.status !== "CANCELLED")
+      .reduce((sum, b) => sum + b.totalCents, 0);
+    const isVip = c._count.bookings >= VIP_BOOKINGS || spend >= VIP_SPEND_CENTS;
+    return { customer: c, spend, isVip };
+  });
+  const vipCount = rows.filter((r) => r.isVip).length;
 
   return (
     <div className="space-y-6">
@@ -44,6 +59,16 @@ export default async function AdminCustomersPage({
         </form>
       </div>
 
+      <div className="flex flex-wrap items-center gap-3 text-xs text-muted">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-pastel-pink px-3 py-1.5 font-semibold text-charcoal">
+          <Sparkles className="h-3.5 w-3.5 text-rose-gold" />
+          {vipCount} VIP {vipCount === 1 ? "client" : "clients"}
+        </span>
+        <span>
+          VIP = {VIP_BOOKINGS}+ bookings or {formatMoney(VIP_SPEND_CENTS)}+ lifetime spend
+        </span>
+      </div>
+
       {customers.length === 0 ? (
         <EmptyState title="No customers found" description="Customers will appear here as they register." />
       ) : (
@@ -54,23 +79,36 @@ export default async function AdminCustomersPage({
                 <th className="p-4">Customer</th>
                 <th className="p-4">Contact</th>
                 <th className="p-4">Bookings</th>
+                <th className="p-4">Lifetime spend</th>
                 <th className="p-4">Loyalty</th>
                 <th className="p-4">Joined</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-charcoal/5">
-              {customers.map((c) => (
+              {rows.map(({ customer: c, spend, isVip }) => (
                 <tr key={c.id} className="hover:bg-pastel-pink/30">
                   <td className="p-4">
-                    <Link href={`/admin/customers/${c.id}`} className="font-semibold text-rose-gold hover:underline">
-                      {c.firstName} {c.lastName}
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/admin/customers/${c.id}`} className="font-semibold text-rose-gold hover:underline">
+                        {c.firstName} {c.lastName}
+                      </Link>
+                      {isVip && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-rose-gold to-amber-400 px-2 py-0.5 text-[0.6rem] font-bold uppercase tracking-wider text-white">
+                          <Sparkles className="h-3 w-3" />
+                          VIP
+                        </span>
+                      )}
+                    </div>
+                    {c._count.bookings >= VIP_BOOKINGS && (
+                      <p className="mt-0.5 text-[0.65rem] text-muted">Repeat client</p>
+                    )}
                   </td>
                   <td className="p-4">
                     <p>{c.user.email}</p>
                     <p className="text-xs text-muted">{c.user.phone ?? "No phone"}</p>
                   </td>
                   <td className="p-4">{c._count.bookings}</td>
+                  <td className="p-4 font-semibold">{formatMoney(spend)}</td>
                   <td className="p-4">
                     <span className="flex items-center gap-1">
                       <Sparkles className="h-3.5 w-3.5 text-rose-gold" />

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { roleHasPermission, type Role } from "@/lib/permissions";
+import { audit } from "@/lib/audit";
 
 const schema = z.object({
   status: z.enum([
@@ -31,9 +32,23 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   if (parsed.data.status === "CANCELLED") data.cancelledAt = new Date();
   if (parsed.data.status === "COMPLETED") data.completedAt = new Date();
 
-  await prisma.booking.update({
+  const updated = await prisma.booking.update({
     where: { id },
     data: { status: parsed.data.status, ...data },
+    include: { customer: true, service: true, package: true },
+  });
+
+  await audit({
+    userId: (session.user as { id?: string }).id,
+    action: `booking.${parsed.data.status.toLowerCase()}`,
+    entity: "booking",
+    entityId: id,
+    metadata: {
+      bookingNumber: updated.bookingNumber,
+      client: `${updated.customer.firstName} ${updated.customer.lastName}`,
+      service: updated.service?.name ?? updated.package?.name ?? null,
+      status: parsed.data.status,
+    },
   });
 
   return NextResponse.json({ ok: true });

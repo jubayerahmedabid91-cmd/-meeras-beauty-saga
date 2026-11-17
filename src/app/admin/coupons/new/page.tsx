@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Ticket } from "lucide-react";
-import { EmptyState } from "@/components/empty-state";
+import { CouponForm } from "@/components/admin/coupon-form";
 
 export const metadata: Metadata = { title: "New Coupon" };
 
@@ -9,14 +8,14 @@ export default function AdminNewCouponPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold md:text-3xl">New Coupon</h1>
-        <p className="mt-1 text-sm text-muted">Create a discount coupon code.</p>
+        <p className="mt-1 text-sm text-muted">
+          Create a discount code your customers can apply to a booking.
+        </p>
       </div>
 
-      <EmptyState
-        icon={<Ticket className="h-6 w-6" />}
-        title="Coupon builder"
-        description="Coupon creation will be available once marketing settings are configured."
-      />
+      <div className="card max-w-2xl p-6">
+        <CouponForm />
+      </div>
     </div>
   );
 }

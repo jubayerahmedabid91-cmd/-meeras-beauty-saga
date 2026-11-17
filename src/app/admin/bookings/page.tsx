@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { formatDate, formatTime, formatMoney } from "@/lib/utils";
 import { StatusBadge } from "@/components/badge";
 import { EmptyState } from "@/components/empty-state";
+import { BookingActions } from "@/components/admin/booking-actions";
 
 export const metadata: Metadata = { title: "All Bookings" };
 
@@ -33,7 +34,12 @@ export default async function AdminBookingsPage({
   const bookings = await prisma.booking.findMany({
     where,
     orderBy: { startsAt: "desc" },
-    include: { customer: true, service: true, package: true, staff: true },
+    include: {
+      customer: { include: { user: { select: { phone: true } } } },
+      service: true,
+      package: true,
+      staff: true,
+    },
   });
 
   const counts = await prisma.booking.groupBy({ by: ["status"], _count: true });
@@ -99,6 +105,7 @@ export default async function AdminBookingsPage({
                 <th className="p-4">Staff</th>
                 <th className="p-4">Total</th>
                 <th className="p-4">Status</th>
+                <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-charcoal/5">
@@ -127,6 +134,24 @@ export default async function AdminBookingsPage({
                   <td className="p-4 font-semibold">{formatMoney(b.totalCents)}</td>
                   <td className="p-4">
                     <StatusBadge status={b.status} />
+                  </td>
+                  <td className="p-4">
+                    <BookingActions
+                      booking={{
+                        id: b.id,
+                        bookingNumber: b.bookingNumber,
+                        customerName: `${b.customer.firstName} ${b.customer.lastName}`,
+                        customerPhone: b.customer.user.phone,
+                        service: b.service?.name ?? b.package?.name ?? "-",
+                        date: formatDate(b.startsAt),
+                        time: formatTime(b.startsAt),
+                        totalCents: b.totalCents,
+                        discountCents: b.discountCents,
+                        status: b.status,
+                        staffName: b.staff ? `${b.staff.firstName} ${b.staff.lastName}` : null,
+                        notes: b.notes,
+                      }}
+                    />
                   </td>
                 </tr>
               ))}

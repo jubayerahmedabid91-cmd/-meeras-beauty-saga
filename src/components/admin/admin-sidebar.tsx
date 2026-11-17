@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 import { LogoWordmark } from "../logo";
 import { signOut } from "next-auth/react";
 
-type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
+type NavItem = { href: string; label: string; icon: React.ComponentType<{ className?: string }>; roles?: string[] };
 type NavGroup = { title: string; items: NavItem[] };
 
 const NAV: NavGroup[] = [
@@ -106,7 +106,7 @@ const NAV: NavGroup[] = [
       { href: "/admin/settings/business-hours", label: "Business Hours", icon: Clock },
       { href: "/admin/settings/notifications", label: "Notification Settings", icon: Mail },
       { href: "/admin/settings/security", label: "Security", icon: Lock },
-      { href: "/admin/audit-logs", label: "Audit Logs", icon: ScrollText },
+      { href: "/admin/audit-logs", label: "Audit Logs", icon: ScrollText, roles: ["OWNER"] },
       { href: "/admin/settings/backup", label: "Backup & Restore", icon: Database },
     ],
   },
@@ -164,7 +164,7 @@ export function AdminSidebar({ role }: { role: string }) {
               </p>
             )}
             <ul className="space-y-1">
-              {group.items.map((item) => {
+              {group.items.filter((item) => !item.roles || item.roles.includes(role)).map((item) => {
                 const active = isActive(item.href);
                 return (
                   <li key={item.href}>

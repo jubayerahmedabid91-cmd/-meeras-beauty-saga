@@ -1,6 +1,7 @@
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { WhatsAppFloat } from "@/components/whatsapp-float";
+import { CurrencyProvider } from "@/components/currency-provider";
 import { safeAuth } from "@/lib/auth";
 import { getSalonProfile } from "@/lib/salon";
 
@@ -16,7 +17,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
   const role = (session?.user as { role?: string } | undefined)?.role;
 
   return (
-    <>
+    <CurrencyProvider currency={salon.currency}>
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-charcoal focus:px-4 focus:py-2 focus:text-cream"
@@ -29,6 +30,6 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       </main>
       <SiteFooter />
       <WhatsAppFloat />
-    </>
+    </CurrencyProvider>
   );
 }

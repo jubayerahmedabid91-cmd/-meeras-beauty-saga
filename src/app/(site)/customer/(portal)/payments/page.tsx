@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { EmptyState } from "@/components/empty-state";
 import { CreditCard } from "lucide-react";
 
@@ -56,7 +57,7 @@ export default async function CustomerPaymentsPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-rose-gold">{formatMoney(p.amountCents)}</span>
+                  <span className="text-sm font-bold text-rose-gold"><Price cents={p.amountCents} /></span>
                   <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
                     {p.status}
                   </span>
@@ -82,7 +83,7 @@ export default async function CustomerPaymentsPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-rose-gold">{formatMoney(inv.totalCents)}</span>
+                  <span className="text-sm font-bold text-rose-gold"><Price cents={inv.totalCents} /></span>
                   <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
                     {inv.status}
                   </span>

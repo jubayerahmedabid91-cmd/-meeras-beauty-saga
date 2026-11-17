@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clock, Check, ArrowRight, Tag } from "lucide-react";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { ROUTES } from "@/lib/brand";
 import type { Package } from "@prisma/client";
 
@@ -26,7 +27,7 @@ export function PackageCard({ package: pkg }: { package: Package }) {
         </span>
         {pkg.discountCents > 0 && (
           <span className="absolute right-3 top-3 rounded-full bg-rose-gold px-3 py-1 text-xs font-bold text-white animate-fade-in-scale" style={{ animationDelay: "0.15s" }}>
-            Save {formatMoney(pkg.discountCents)}
+            Save <Price cents={pkg.discountCents} />
           </span>
         )}
         {/* Luxury shimmer overlay on hover */}
@@ -51,9 +52,9 @@ export function PackageCard({ package: pkg }: { package: Package }) {
         <div className="mt-auto flex items-end justify-between pt-3 border-t border-charcoal/5">
           <div>
             {pkg.discountCents > 0 && (
-              <p className="text-xs text-muted line-through">{formatMoney(pkg.priceCents)}</p>
+              <p className="text-xs text-muted line-through"><Price cents={pkg.priceCents} /></p>
             )}
-            <p className="text-xl font-bold text-rose-gold">{formatMoney(finalPrice)}</p>
+            <p className="text-xl font-bold text-rose-gold"><Price cents={finalPrice} /></p>
           </div>
           <Link href={ROUTES.package(pkg.slug)} className="btn-primary !px-4 !py-2 text-xs group">
             <span className="flex items-center gap-1.5">Book This Package</span>

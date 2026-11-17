@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/badge";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 
 export const metadata: Metadata = { title: "Gift Cards" };
 
@@ -45,7 +46,7 @@ export default async function AdminGiftCardsPage() {
                 <tr key={gc.id} className="hover:bg-pastel-pink/30">
                   <td className="p-4 font-mono font-semibold">{gc.code}</td>
                   <td className="p-4">{gc.recipientName ?? gc.customer?.firstName ?? "-"}</td>
-                  <td className="p-4 font-semibold">{formatMoney(gc.balanceCents)}</td>
+                  <td className="p-4 font-semibold"><Price cents={gc.balanceCents} /></td>
                   <td className="p-4">
                     <Badge tone={gc.isActive ? "rose" : "outline"}>{gc.isActive ? "Active" : "Redeemed"}</Badge>
                   </td>

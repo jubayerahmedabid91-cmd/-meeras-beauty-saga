@@ -9,12 +9,14 @@ import { TransformationShowcase } from "@/components/home/transformation-showcas
 import { GalleryPreview } from "@/components/home/gallery-preview";
 import { ReviewsPreview } from "@/components/home/reviews-preview";
 import { ContactCta } from "@/components/home/contact-cta";
+import { getClaims } from "@/lib/claims";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const claims = await getClaims();
   return (
     <>
-      <Hero />
-      <TrustBar />
+      <Hero claims={claims} />
+      <TrustBar claims={claims} />
       <FeaturedServices />
       <AboutPreview />
       <PopularPackages />

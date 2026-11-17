@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { MessageCircle, Printer, ReceiptText, X } from "lucide-react";
 import { cn, formatMoney } from "@/lib/utils";
+import { useCurrency } from "@/components/currency-provider";
 
 export type BookingActionData = {
   id: string;
@@ -32,6 +33,8 @@ export function BookingActions({
   variant?: "row" | "card";
 }) {
   const [open, setOpen] = useState(false);
+  const currency = useCurrency();
+  const money = (cents: number) => formatMoney(cents, currency);
   const isCard = variant === "card";
   const btnClass = isCard
     ? "flex flex-1 items-center justify-center gap-1 rounded-xl border px-3 py-2.5 text-sm font-semibold transition"
@@ -46,7 +49,7 @@ export function BookingActions({
       `Date: ${booking.date}\n` +
       `Time: ${booking.time}\n` +
       (booking.staffName ? `Specialist: ${booking.staffName}\n` : "") +
-      `Amount: ${formatMoney(booking.totalCents)}\n\n` +
+      `Amount: ${money(booking.totalCents)}\n\n` +
       `We look forward to welcoming you. For any changes, simply reply here.`,
   );
 
@@ -131,7 +134,7 @@ export function BookingActions({
                 <div className="mt-4 space-y-1.5 rounded-xl bg-pastel-pink p-3 text-xs">
                   <div className="flex justify-between">
                     <span className="text-muted">Subtotal</span>
-                    <span>{formatMoney(booking.totalCents + (booking.discountCents ?? 0))}</span>
+                    <span>{money(booking.totalCents + (booking.discountCents ?? 0))}</span>
                   </div>
                   <div className="flex justify-between font-medium text-emerald-700">
                     <span>
@@ -142,7 +145,7 @@ export function BookingActions({
                         </span>
                       ) : null}
                     </span>
-                    <span>-{formatMoney(booking.discountCents ?? 0)}</span>
+                    <span>-{money(booking.discountCents ?? 0)}</span>
                   </div>
                 </div>
               )}
@@ -150,7 +153,7 @@ export function BookingActions({
               <div className="mt-4 flex items-center justify-between border-t border-charcoal/10 pt-4">
                 <span className="text-sm font-semibold text-muted">Total</span>
                 <span className="text-xl font-bold text-rose-gold">
-                  {formatMoney(booking.totalCents)}
+                  {money(booking.totalCents)}
                 </span>
               </div>
 

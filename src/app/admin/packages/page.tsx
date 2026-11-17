@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { Badge } from "@/components/badge";
 import { EmptyState } from "@/components/empty-state";
 
@@ -53,8 +54,8 @@ export default async function AdminPackagesPage() {
                   </td>
                   <td className="p-4">{p.category}</td>
                   <td className="p-4">{p._count.items}</td>
-                  <td className="p-4 font-semibold">{formatMoney(p.priceCents - p.discountCents)}</td>
-                  <td className="p-4">{p.discountCents > 0 ? formatMoney(p.discountCents) : "-"}</td>
+                  <td className="p-4 font-semibold"><Price cents={p.priceCents - p.discountCents} /></td>
+                  <td className="p-4">{p.discountCents > 0 ? <Price cents={p.discountCents} /> : "-"}</td>
                   <td className="p-4">
                     <Badge tone={p.isActive ? "rose" : "outline"}>{p.isActive ? "Active" : "Inactive"}</Badge>
                   </td>

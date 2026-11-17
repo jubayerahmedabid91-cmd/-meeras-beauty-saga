@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Clock, ArrowRight, Check, Phone } from "lucide-react";
 import { prisma, safeQuery } from "@/lib/prisma";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/badge";
 import { Reveal } from "@/components/reveal";
@@ -87,7 +88,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted">Price</p>
-                    <p className="text-3xl font-bold text-rose-gold">{formatMoney(service.priceCents)}</p>
+                    <p className="text-3xl font-bold text-rose-gold"><Price cents={service.priceCents} /></p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-muted">Duration</p>
@@ -120,7 +121,7 @@ export default async function ServiceDetailPage({ params }: { params: Promise<{ 
                           {a.name}
                         </span>
                         <span className="text-sm font-semibold text-rose-gold">
-                          +{formatMoney(a.priceCents)}
+                          +<Price cents={a.priceCents} />
                         </span>
                       </li>
                     ))}

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Calendar, Search } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatTime, formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { StatusBadge } from "@/components/badge";
 import { EmptyState } from "@/components/empty-state";
 import { BookingRowActions } from "@/components/admin/booking-row-actions";
@@ -166,7 +167,7 @@ export default async function AdminBookingsPage({
                     <td className="p-4">
                       <StaffAssignSelect bookingId={b.id} value={b.staff?.id ?? null} staff={staffOptions} />
                     </td>
-                    <td className="p-4 font-semibold">{formatMoney(b.totalCents)}</td>
+                    <td className="p-4 font-semibold"><Price cents={b.totalCents} /></td>
                     <td className="p-4">
                       <StatusBadge status={b.status} />
                     </td>

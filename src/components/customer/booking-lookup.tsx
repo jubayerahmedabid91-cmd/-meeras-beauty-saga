@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Calendar, Clock, Loader2, MessageCircle, Search, Sparkles } from "lucide-react";
 import type { BookingLookupItem } from "@/lib/booking-lookup";
 import { formatMoney } from "@/lib/utils";
+import { fillMessage } from "@/lib/messages";
+import { useCurrency } from "@/components/currency-provider";
 
 function statusTone(status: string) {
   if (status === "PENDING") return "bg-amber-100 text-amber-800 border-amber-300";
@@ -21,10 +23,14 @@ function statusLabel(status: string) {
 export function LookupBookingCard({
   booking,
   whatsappDigits,
+  message,
 }: {
   booking: BookingLookupItem;
   whatsappDigits: string | null;
+  message: string;
 }) {
+  const currency = useCurrency();
+  const money = (cents: number) => formatMoney(cents, currency);
   const start = new Date(booking.startsAt);
   const date = start.toLocaleDateString("en-US", {
     weekday: "short",
@@ -35,7 +41,13 @@ export function LookupBookingCard({
   const time = start.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 
   const waText = encodeURIComponent(
-    `Hello Meera's - The Beauty Saga! I'd like to ask about my booking ${booking.bookingNumber} (${booking.service} on ${date} at ${time}).`,
+    fillMessage(message, {
+      name: booking.customerName,
+      service: booking.service,
+      date,
+      time,
+      ref: booking.bookingNumber,
+    }),
   );
 
   return (
@@ -60,7 +72,7 @@ export function LookupBookingCard({
           {time}
         </span>
         <span className="ml-auto text-sm font-bold text-rose-gold-dark">
-          {formatMoney(booking.totalCents)}
+          {money(booking.totalCents)}
         </span>
       </div>
 
@@ -88,7 +100,15 @@ export function LookupBookingCard({
 /**
  * Phone / email / booking-ID lookup for visitors who are not signed in.
  */
-export function BookingLookup({ whatsappDigits }: { whatsappDigits: string | null }) {
+export function BookingLookup({
+  whatsappDigits,
+  message,
+}: {
+  whatsappDigits: string | null;
+  message: string;
+}) {
+  const currency = useCurrency();
+  const money = (cents: number) => formatMoney(cents, currency);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -169,7 +189,7 @@ export function BookingLookup({ whatsappDigits }: { whatsappDigits: string | nul
           ) : (
             <div className="space-y-4">
               {results.map((b) => (
-                <LookupBookingCard key={b.id} booking={b} whatsappDigits={whatsappDigits} />
+                <LookupBookingCard key={b.id} booking={b} whatsappDigits={whatsappDigits} message={message} />
               ))}
             </div>
           )}

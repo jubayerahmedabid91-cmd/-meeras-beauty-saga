@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Clock, ArrowRight, Check, Phone } from "lucide-react";
 import { prisma, safeQuery } from "@/lib/prisma";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { PageHeader } from "@/components/page-header";
 import { Badge } from "@/components/badge";
 import { Reveal } from "@/components/reveal";
@@ -77,7 +78,7 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
               </span>
               {pkg.discountCents > 0 && (
                 <span className="absolute right-4 top-4 rounded-full bg-rose-gold px-3 py-1.5 text-sm font-bold text-white">
-                  Save {formatMoney(pkg.discountCents)}
+                  Save <Price cents={pkg.discountCents} />
                 </span>
               )}
             </div>
@@ -89,9 +90,9 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted">Package price</p>
-                    <p className="text-3xl font-bold text-rose-gold">{formatMoney(finalPrice)}</p>
+                    <p className="text-3xl font-bold text-rose-gold"><Price cents={finalPrice} /></p>
                     {pkg.discountCents > 0 && (
-                      <p className="mt-1 text-sm text-muted line-through">{formatMoney(pkg.priceCents)}</p>
+                      <p className="mt-1 text-sm text-muted line-through"><Price cents={pkg.priceCents} /></p>
                     )}
                   </div>
                   <div className="text-right">
@@ -128,7 +129,7 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
                           {item.quantity > 1 && <span className="text-muted">x {item.quantity}</span>}
                         </span>
                         <span className="text-sm font-semibold text-rose-gold">
-                          {formatMoney(item.service.priceCents)}
+                          <Price cents={item.service.priceCents} />
                         </span>
                       </li>
                     ))}

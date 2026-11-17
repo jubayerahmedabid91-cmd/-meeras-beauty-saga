@@ -5,6 +5,7 @@ import { Calendar, Clock, ArrowRight } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatMoney, formatDate, formatTime } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { StatusBadge } from "@/components/badge";
 import { EmptyState } from "@/components/empty-state";
 
@@ -63,7 +64,7 @@ export default async function CustomerBookingsPage() {
                 <p className="mt-1 text-xs text-muted">Ref: {b.bookingNumber}</p>
               </div>
               <div className="flex items-center gap-3">
-                <span className="text-sm font-bold text-rose-gold">{formatMoney(b.totalCents)}</span>
+                <span className="text-sm font-bold text-rose-gold"><Price cents={b.totalCents} /></span>
                 <StatusBadge status={b.status} />
                 <Link
                   href={`/customer/bookings/${b.id}`}

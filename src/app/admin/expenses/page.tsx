@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Receipt } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { EmptyState } from "@/components/empty-state";
 
 export const metadata: Metadata = { title: "Expenses" };
@@ -19,7 +20,7 @@ export default async function AdminExpensesPage() {
 
       <div className="card p-5">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted">Total expenses</p>
-        <p className="mt-2 text-2xl font-bold text-rose-600">{formatMoney(total)}</p>
+        <p className="mt-2 text-2xl font-bold text-rose-600"><Price cents={total} /></p>
       </div>
 
       {expenses.length === 0 ? (
@@ -37,7 +38,7 @@ export default async function AdminExpensesPage() {
                 <p className="text-xs text-muted">{e.description}</p>
                 <p className="text-xs text-muted">{new Date(e.incurredAt).toLocaleDateString()}</p>
               </div>
-              <span className="font-bold text-rose-600">{formatMoney(e.amountCents)}</span>
+              <span className="font-bold text-rose-600"><Price cents={e.amountCents} /></span>
             </div>
           ))}
         </div>

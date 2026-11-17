@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Calendar, Clock } from "lucide-react";
 import { cn, formatMoney } from "@/lib/utils";
+import { useCurrency } from "@/components/currency-provider";
 import { Reveal } from "@/components/reveal";
 
 export type ShowcaseService = {
@@ -43,6 +44,8 @@ function bucketOf(categoryName: string): Exclude<TabKey, "all"> | "other" {
  * "Book Now" deep-links into /booking with the service pre-selected.
  */
 export function ServicesShowcaseClient({ services }: { services: ShowcaseService[] }) {
+  const currency = useCurrency();
+  const money = (cents: number) => formatMoney(cents, currency);
   const [tab, setTab] = useState<TabKey>("all");
 
   const availableTabs = useMemo(() => {
@@ -119,7 +122,7 @@ export function ServicesShowcaseClient({ services }: { services: ShowcaseService
                   )}
                   <div className="mt-auto flex items-center justify-between pt-3">
                     <span className="text-base font-bold text-rose-gold">
-                      {formatMoney(s.priceCents)}
+                      {money(s.priceCents)}
                     </span>
                     <Link
                       href={`/booking?service=${encodeURIComponent(s.slug)}`}

@@ -4,8 +4,9 @@ import { ArrowRight, Sparkles, Calendar, Star, ShieldCheck, Leaf } from "lucide-
 import { LogoMark } from "@/components/logo";
 import { BRAND } from "@/lib/brand";
 import { Reveal } from "@/components/reveal";
+import type { Claims } from "@/lib/claims";
 
-export function Hero() {
+export function Hero({ claims }: { claims: Claims }) {
   return (
     <section className="pattern-surface relative overflow-hidden">
       {/* decorative arches + champagne glow */}
@@ -103,15 +104,19 @@ export function Hero() {
                   View
                 </Link>
               </div>
-              {/* floating luxury chips */}
-              <span className="glass absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.65rem] font-bold uppercase tracking-wider text-charcoal shadow-soft">
-                <ShieldCheck className="h-3.5 w-3.5 text-gold-dark" />
-                Certified Artists
-              </span>
-              <span className="glass absolute right-5 top-16 hidden items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.65rem] font-bold uppercase tracking-wider text-charcoal shadow-soft sm:inline-flex">
-                <Leaf className="h-3.5 w-3.5 text-gold-dark" />
-                Authentic Products
-              </span>
+              {/* floating luxury chips — only owner-confirmed claims */}
+              {claims.certifiedArtists && (
+                <span className="glass absolute left-5 top-5 inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.65rem] font-bold uppercase tracking-wider text-charcoal shadow-soft">
+                  <ShieldCheck className="h-3.5 w-3.5 text-gold-dark" />
+                  Certified Artists
+                </span>
+              )}
+              {claims.authenticProducts && (
+                <span className="glass absolute right-5 top-16 hidden items-center gap-1.5 rounded-full px-3.5 py-1.5 text-[0.65rem] font-bold uppercase tracking-wider text-charcoal shadow-soft sm:inline-flex">
+                  <Leaf className="h-3.5 w-3.5 text-gold-dark" />
+                  Authentic Products
+                </span>
+              )}
             </div>
           </div>
         </Reveal>

@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/badge";
 import { CouponRowActions } from "@/components/admin/coupon-row-actions";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 
 export const metadata: Metadata = { title: "Coupons / Offers" };
 
@@ -46,7 +47,7 @@ export default async function AdminCouponsPage() {
                   <td className="p-4 font-mono font-semibold">{c.code}</td>
                   <td className="p-4">{c.type}</td>
                   <td className="p-4">
-                    {c.type === "PERCENT" ? `${c.value}%` : formatMoney(c.value)}
+                    {c.type === "PERCENT" ? `${c.value}%` : <Price cents={c.value} />}
                   </td>
                   <td className="p-4">
                     {c.usedCount}

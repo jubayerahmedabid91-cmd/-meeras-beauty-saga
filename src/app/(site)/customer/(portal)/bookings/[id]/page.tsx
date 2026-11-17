@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { formatMoney, formatDate, formatTime } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { StatusBadge, Badge } from "@/components/badge";
 import { getSalonProfile } from "@/lib/salon";
 import { CancelBookingButton, RescheduleRequestForm, ReviewForm } from "@/components/customer/booking-detail-actions";
@@ -84,7 +85,7 @@ export default async function CustomerBookingDetailPage({
           </div>
           <div>
             <dt className="text-xs text-muted">Total</dt>
-            <dd className="text-lg font-bold text-rose-gold">{formatMoney(booking.totalCents)}</dd>
+            <dd className="text-lg font-bold text-rose-gold"><Price cents={booking.totalCents} /></dd>
           </div>
           <div>
             <dt className="text-xs text-muted">Payment status</dt>

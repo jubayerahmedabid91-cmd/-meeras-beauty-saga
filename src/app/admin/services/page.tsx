@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Plus, Clock } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { Badge } from "@/components/badge";
 import { EmptyState } from "@/components/empty-state";
 
@@ -87,7 +88,7 @@ export default async function AdminServicesPage({
                       {s.durationMin} min
                     </span>
                   </td>
-                  <td className="p-4 font-semibold">{formatMoney(s.priceCents)}</td>
+                  <td className="p-4 font-semibold"><Price cents={s.priceCents} /></td>
                   <td className="p-4">
                     <Badge tone={s.isActive ? "rose" : "outline"}>{s.isActive ? "Active" : "Inactive"}</Badge>
                   </td>

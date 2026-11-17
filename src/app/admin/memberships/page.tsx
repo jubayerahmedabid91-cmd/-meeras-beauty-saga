@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/badge";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 
 export const metadata: Metadata = { title: "Memberships" };
 
@@ -37,7 +38,7 @@ export default async function AdminMembershipsPage() {
                 <h2 className="text-lg font-bold">{m.name}</h2>
                 <Badge tone="rose">{m.tier}</Badge>
               </div>
-              <p className="mt-2 text-2xl font-bold text-rose-gold">{formatMoney(m.priceCents)}</p>
+              <p className="mt-2 text-2xl font-bold text-rose-gold"><Price cents={m.priceCents} /></p>
               <p className="text-xs text-muted">{m.discountPct}% discount on services</p>
               <p className="mt-3 text-sm text-muted">{m._count.customers} active member(s)</p>
             </div>

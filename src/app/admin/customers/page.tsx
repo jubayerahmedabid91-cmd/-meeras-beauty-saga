@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/badge";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 
 export const metadata: Metadata = { title: "Clients (CRM)" };
 
@@ -65,7 +66,7 @@ export default async function AdminCustomersPage({
           {vipCount} VIP {vipCount === 1 ? "client" : "clients"}
         </span>
         <span>
-          VIP = {VIP_BOOKINGS}+ bookings or {formatMoney(VIP_SPEND_CENTS)}+ lifetime spend
+          VIP = {VIP_BOOKINGS}+ bookings or <Price cents={VIP_SPEND_CENTS} />+ lifetime spend
         </span>
       </div>
 
@@ -108,7 +109,7 @@ export default async function AdminCustomersPage({
                     <p className="text-xs text-muted">{c.user.phone ?? "No phone"}</p>
                   </td>
                   <td className="p-4">{c._count.bookings}</td>
-                  <td className="p-4 font-semibold">{formatMoney(spend)}</td>
+                  <td className="p-4 font-semibold"><Price cents={spend} /></td>
                   <td className="p-4">
                     <span className="flex items-center gap-1">
                       <Sparkles className="h-3.5 w-3.5 text-rose-gold" />

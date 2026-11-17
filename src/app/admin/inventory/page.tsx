@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Boxes, AlertTriangle, Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { Badge } from "@/components/badge";
 import { EmptyState } from "@/components/empty-state";
 import Link from "next/link";
@@ -67,8 +68,8 @@ export default async function AdminInventoryPage() {
                       {p.stockQty} {p.unit}
                     </Badge>
                   </td>
-                  <td className="p-4">{formatMoney(p.costCents)}</td>
-                  <td className="p-4 font-semibold">{formatMoney(p.priceCents)}</td>
+                  <td className="p-4"><Price cents={p.costCents} /></td>
+                  <td className="p-4 font-semibold"><Price cents={p.priceCents} /></td>
                   <td className="p-4">
                     <Badge tone={p.isActive ? "rose" : "outline"}>{p.isActive ? "Active" : "Inactive"}</Badge>
                   </td>

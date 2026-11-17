@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clock, ArrowRight, Sparkles } from "lucide-react";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { ROUTES } from "@/lib/brand";
 import type { Service, ServiceCategory } from "@prisma/client";
 
@@ -42,7 +43,7 @@ export function ServiceCard({ service }: { service: ServiceWithCategory }) {
             <Clock className="h-3.5 w-3.5" />
             {service.durationMin} min
           </span>
-          <span className="text-base font-bold text-rose-gold">{formatMoney(service.priceCents)}</span>
+          <span className="text-base font-bold text-rose-gold"><Price cents={service.priceCents} /></span>
         </div>
         <span className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-rose-gold group-hover:gap-2 transition-all">
           View details

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, Calendar, CreditCard, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { StatusBadge } from "@/components/badge";
 
 export const metadata: Metadata = { title: "Customer Details" };
@@ -54,7 +55,7 @@ export default async function AdminCustomerDetailPage({
         </div>
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">Total spent</p>
-          <p className="mt-2 text-2xl font-bold text-emerald-600">{formatMoney(totalSpent)}</p>
+          <p className="mt-2 text-2xl font-bold text-emerald-600"><Price cents={totalSpent} /></p>
         </div>
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">Loyalty</p>
@@ -88,7 +89,7 @@ export default async function AdminCustomerDetailPage({
                   <p className="text-xs text-muted">{formatDate(b.startsAt)}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="font-bold text-rose-gold">{formatMoney(b.totalCents)}</span>
+                  <span className="font-bold text-rose-gold"><Price cents={b.totalCents} /></span>
                   <StatusBadge status={b.status} />
                 </div>
               </li>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { safeAuth } from "@/lib/auth";
 import { AdminShell } from "@/components/admin/admin-shell";
+import { CurrencyProvider } from "@/components/currency-provider";
 import { getSalonProfile } from "@/lib/salon";
 
 export const metadata: Metadata = { title: "Admin Panel" };
@@ -21,5 +22,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   const salon = await getSalonProfile();
 
-  return <AdminShell logoUrl={salon.logoUrl}>{children}</AdminShell>;
+  return (
+    <CurrencyProvider currency={salon.currency}>
+      <AdminShell logoUrl={salon.logoUrl}>{children}</AdminShell>
+    </CurrencyProvider>
+  );
 }

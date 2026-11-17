@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CreditCard, Calendar, Clock } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatMoney, formatDate } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { Badge } from "@/components/badge";
 import { EmptyState } from "@/components/empty-state";
 
@@ -27,11 +28,11 @@ export default async function AdminPaymentsPage() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">Collected</p>
-          <p className="mt-2 text-2xl font-bold text-emerald-600">{formatMoney(total)}</p>
+          <p className="mt-2 text-2xl font-bold text-emerald-600"><Price cents={total} /></p>
         </div>
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">Pending</p>
-          <p className="mt-2 text-2xl font-bold text-amber-600">{formatMoney(pending)}</p>
+          <p className="mt-2 text-2xl font-bold text-amber-600"><Price cents={pending} /></p>
         </div>
       </div>
 
@@ -70,7 +71,7 @@ export default async function AdminPaymentsPage() {
                     </span>
                   </td>
                   <td className="p-4">{p.method}</td>
-                  <td className="p-4 font-semibold">{formatMoney(p.amountCents)}</td>
+                  <td className="p-4 font-semibold"><Price cents={p.amountCents} /></td>
                   <td className="p-4">
                     <Badge tone={p.status === "PAID" ? "rose" : p.status === "REFUNDED" ? "outline" : "charcoal"}>
                       {p.status}

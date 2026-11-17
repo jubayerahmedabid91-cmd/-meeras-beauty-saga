@@ -1,4 +1,5 @@
 import { getWhatsAppDigits } from "@/lib/data";
+import { getWhatsAppMessages } from "@/lib/whatsapp";
 import { WhatsAppButton } from "./whatsapp-button";
 
 /**
@@ -11,12 +12,10 @@ import { WhatsAppButton } from "./whatsapp-button";
  * never invent a phone number for the business.
  */
 export async function WhatsAppFloat() {
-  const digits = await getWhatsAppDigits();
+  const [digits, messages] = await Promise.all([getWhatsAppDigits(), getWhatsAppMessages()]);
   if (!digits) return null;
 
-  const message = encodeURIComponent(
-    "Hello Meera's - The Beauty Saga! I would like to know more about your services.",
-  );
+  const message = encodeURIComponent(messages.default);
 
   return <WhatsAppButton number={digits} message={message} />;
 }

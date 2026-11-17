@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { BarChart3 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 
 export const metadata: Metadata = { title: "Revenue Reports" };
 
@@ -32,7 +33,7 @@ export default async function AdminRevenueReportsPage() {
           <div className="flex h-48 items-end gap-3">
             {months.map((m) => (
               <div key={m} className="flex flex-1 flex-col items-center gap-2">
-                <span className="text-xs font-semibold">{formatMoney(byMonth[m])}</span>
+                <span className="text-xs font-semibold"><Price cents={byMonth[m]} /></span>
                 <div
                   className="w-full rounded-t-lg bg-rose-gold"
                   style={{ height: `${Math.max(6, (byMonth[m] / max) * 160)}px` }}

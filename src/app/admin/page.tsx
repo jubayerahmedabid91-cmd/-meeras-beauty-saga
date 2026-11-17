@@ -8,6 +8,7 @@ import { Reveal } from "@/components/reveal";
 import { EmptyState } from "@/components/empty-state";
 import { RevenueChart, type TrendPoint } from "@/components/admin/revenue-chart";
 import { BookingRowActions } from "@/components/admin/booking-row-actions";
+import { getSalonProfile } from "@/lib/salon";
 
 export const metadata: Metadata = { title: "Admin Dashboard" };
 
@@ -36,6 +37,7 @@ function buildTrend(rows: TrendRow[]): TrendPoint[] {
 }
 
 export default async function AdminDashboardPage() {
+  const salon = await getSalonProfile();
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const tomorrow = new Date(today);
@@ -111,7 +113,7 @@ export default async function AdminDashboardPage() {
   const kpis = [
     {
       label: "Today's Revenue",
-      value: formatMoney(todayRevenueAgg._sum.amountCents ?? 0),
+      value: formatMoney(todayRevenueAgg._sum.amountCents ?? 0, salon.currency),
       icon: Banknote,
       tone: "text-emerald-600 bg-emerald-100",
       hint: `${todayBookings} booking${todayBookings === 1 ? "" : "s"} today`,

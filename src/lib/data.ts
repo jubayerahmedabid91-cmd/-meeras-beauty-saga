@@ -152,7 +152,10 @@ export async function getBusinessSetting<T = unknown>(key: string, fallback: T):
     try {
       return JSON.parse(row.value) as T;
     } catch {
-      return readDefaultSetting(key, fallback);
+      // Settings saved through the admin forms are stored as plain strings
+      // (e.g. currency "BDT", a phone number, an address). Only structured
+      // values are JSON-encoded, so a parse failure means "plain string".
+      return row.value as unknown as T;
     }
   } catch (error) {
     console.error(`[data] getBusinessSetting(${key}) failed, using default:`, error);

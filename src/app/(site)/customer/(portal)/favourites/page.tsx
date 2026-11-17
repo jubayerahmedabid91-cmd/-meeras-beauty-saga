@@ -6,6 +6,7 @@ import { Heart, ArrowRight } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { EmptyState } from "@/components/empty-state";
 
 export const metadata: Metadata = { title: "Favourites" };
@@ -52,7 +53,7 @@ export default async function CustomerFavouritesPage() {
                   <div className="p-4">
                     <p className="text-xs text-rose-gold">{s.category.name}</p>
                     <p className="font-semibold">{s.name}</p>
-                    <p className="mt-1 text-sm font-bold text-rose-gold">{formatMoney(s.priceCents)}</p>
+                    <p className="mt-1 text-sm font-bold text-rose-gold"><Price cents={s.priceCents} /></p>
                   </div>
                 </Link>
               );
@@ -69,7 +70,7 @@ export default async function CustomerFavouritesPage() {
                   <div className="p-4">
                     <p className="text-xs text-rose-gold">{p.category}</p>
                     <p className="font-semibold">{p.name}</p>
-                    <p className="mt-1 text-sm font-bold text-rose-gold">{formatMoney(p.priceCents - p.discountCents)}</p>
+                    <p className="mt-1 text-sm font-bold text-rose-gold"><Price cents={p.priceCents - p.discountCents} /></p>
                   </div>
                 </Link>
               );

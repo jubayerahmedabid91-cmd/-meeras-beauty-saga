@@ -17,12 +17,14 @@ export type BookingLookupItem = {
   totalCents: number;
   status: string;
   staffName: string | null;
+  customerName: string;
 };
 
 const BOOKING_INCLUDE = {
   service: true,
   package: true,
   staff: true,
+  customer: { select: { firstName: true, lastName: true } },
 } satisfies Prisma.BookingInclude;
 
 type BookingWithRelations = {
@@ -34,6 +36,7 @@ type BookingWithRelations = {
   service: { name: string } | null;
   package: { name: string } | null;
   staff: { firstName: string; lastName: string } | null;
+  customer: { firstName: string; lastName: string };
 };
 
 export function serializeBooking(b: BookingWithRelations): BookingLookupItem {
@@ -45,6 +48,7 @@ export function serializeBooking(b: BookingWithRelations): BookingLookupItem {
     totalCents: b.totalCents,
     status: b.status,
     staffName: b.staff ? `${b.staff.firstName} ${b.staff.lastName}` : null,
+    customerName: `${b.customer.firstName} ${b.customer.lastName}`.trim() || "Guest",
   };
 }
 

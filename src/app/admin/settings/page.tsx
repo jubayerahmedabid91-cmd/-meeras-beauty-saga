@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Settings, Building2, Clock, Globe, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { BusinessSettingsForm } from "@/components/admin/business-settings-form";
+import { ClaimsSettingsForm } from "@/components/admin/claims-settings-form";
+import { getClaims } from "@/lib/claims";
+import { getWhatsAppMessages } from "@/lib/whatsapp";
+import { WhatsAppSettingsForm } from "@/components/admin/whatsapp-settings-form";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -21,6 +25,8 @@ export default async function AdminSettingsPage() {
   const rawWhatsapp = String(map.whatsapp ?? "").trim();
   const whatsappConfigured =
     rawWhatsapp.length >= 8 && !PLACEHOLDER.test(rawWhatsapp) && /\d{8,}/.test(rawWhatsapp);
+
+  const [claims, waMessages] = await Promise.all([getClaims(), getWhatsAppMessages()]);
 
   return (
     <div className="space-y-6">
@@ -105,6 +111,24 @@ export default async function AdminSettingsPage() {
             />
           </div>
         </div>
+
+        <ClaimsSettingsForm
+          initial={{
+            certifiedArtists: claims.certifiedArtists,
+            authenticProducts: claims.authenticProducts,
+            hygienicSuite: claims.hygienicSuite,
+            happyBrides: claims.happyBrides,
+          }}
+        />
+
+        <WhatsAppSettingsForm
+          initial={{
+            default: waMessages.default,
+            booking: waMessages.booking,
+            service: waMessages.service,
+            bridal: waMessages.bridal,
+          }}
+        />
 
         <div className="card p-6">
           <div className="flex items-center gap-3">

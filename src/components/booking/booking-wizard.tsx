@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Calendar, Clock, User, CheckCircle, Loader2, ArrowLeft, ArrowRight, Sparkles, PackageSearch, Star, Shield, Tag } from "lucide-react";
 import { cn, formatMoney } from "@/lib/utils";
+import { useCurrency } from "@/components/currency-provider";
 
 type ServiceOption = {
   id: string;
@@ -49,6 +50,8 @@ export function BookingWizard({
   preselectedPackage?: string;
 }) {
   const router = useRouter();
+  const currency = useCurrency();
+  const money = (cents: number) => formatMoney(cents, currency);
   const [step, setStep] = useState(0);
   const [kind, setKind] = useState<"service" | "package">(
     preselectedPackage ? "package" : "service",
@@ -195,7 +198,7 @@ export function BookingWizard({
       const data = await res.json().catch(() => ({}));
       if (data.ok) {
         setCouponDiscount(data.discountCents);
-        setCouponMessage(`Code ${data.code} applied — you save ${formatMoney(data.discountCents)}.`);
+        setCouponMessage(`Code ${data.code} applied — you save ${money(data.discountCents)}.`);
       } else {
         setCouponDiscount(0);
         setCouponMessage(data.reason ?? "That code is not valid.");
@@ -312,7 +315,7 @@ export function BookingWizard({
                     <p className="font-semibold">{s.name}</p>
                     <p className="mt-1 text-xs text-muted">{s.durationMin} min</p>
                   </div>
-                  <span className="text-sm font-bold text-rose-gold">{formatMoney(s.priceCents)}</span>
+                  <span className="text-sm font-bold text-rose-gold">{money(s.priceCents)}</span>
                 </button>
               ))}
             </div>
@@ -333,7 +336,7 @@ export function BookingWizard({
                     <p className="font-semibold">{p.name}</p>
                     <p className="mt-1 text-xs text-muted">{p.durationMin} min</p>
                   </div>
-                  <span className="text-sm font-bold text-rose-gold">{formatMoney(p.priceCents)}</span>
+                  <span className="text-sm font-bold text-rose-gold">{money(p.priceCents)}</span>
                 </button>
               ))}
             </div>
@@ -496,7 +499,7 @@ export function BookingWizard({
             </div>
             <div className="flex justify-between py-2">
               <dt className="text-muted">Estimated total</dt>
-              <dd className="font-semibold text-rose-gold text-lg">{formatMoney(selectedItem.priceCents)}</dd>
+              <dd className="font-semibold text-rose-gold text-lg">{money(selectedItem.priceCents)}</dd>
             </div>
           </dl>
 
@@ -530,16 +533,16 @@ export function BookingWizard({
             <div className="space-y-1.5 rounded-xl bg-pastel-pink p-3 text-sm animate-fade-in-scale">
               <div className="flex justify-between">
                 <span className="text-muted">Subtotal</span>
-                <span>{formatMoney(selectedItem.priceCents)}</span>
+                <span>{money(selectedItem.priceCents)}</span>
               </div>
               <div className="flex justify-between font-medium text-emerald-700">
                 <span>Discount</span>
-                <span>-{formatMoney(couponDiscount)}</span>
+                <span>-{money(couponDiscount)}</span>
               </div>
               <div className="flex justify-between border-t border-charcoal/10 pt-1.5 font-bold text-lg">
                 <span>Total</span>
                 <span className="text-rose-gold">
-                  {formatMoney(Math.max(0, selectedItem.priceCents - couponDiscount))}
+                  {money(Math.max(0, selectedItem.priceCents - couponDiscount))}
                 </span>
               </div>
             </div>

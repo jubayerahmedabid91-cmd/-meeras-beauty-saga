@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/badge";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 
 export const metadata: Metadata = { title: "Invoices" };
 
@@ -51,7 +52,7 @@ export default async function AdminInvoicesPage() {
                   <td className="p-4 text-xs text-muted">
                     {new Date(inv.issuedAt).toLocaleDateString()}
                   </td>
-                  <td className="p-4 font-semibold">{formatMoney(inv.totalCents)}</td>
+                  <td className="p-4 font-semibold"><Price cents={inv.totalCents} /></td>
                   <td className="p-4">
                     <Badge tone={inv.status === "PAID" ? "rose" : inv.status === "VOID" ? "outline" : "charcoal"}>
                       {inv.status}

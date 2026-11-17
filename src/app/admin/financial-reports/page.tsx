@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { LineChart } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 
 export const metadata: Metadata = { title: "Financial Reports" };
 
@@ -30,16 +31,16 @@ export default async function AdminFinancialReportsPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">Income</p>
-          <p className="mt-2 text-2xl font-bold text-emerald-600">{formatMoney(income)}</p>
+          <p className="mt-2 text-2xl font-bold text-emerald-600"><Price cents={income} /></p>
         </div>
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">Expenses</p>
-          <p className="mt-2 text-2xl font-bold text-rose-600">{formatMoney(expense)}</p>
+          <p className="mt-2 text-2xl font-bold text-rose-600"><Price cents={expense} /></p>
         </div>
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">Net</p>
           <p className={`mt-2 text-2xl font-bold ${income - expense >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
-            {formatMoney(income - expense)}
+            <Price cents={income - expense} />
           </p>
         </div>
       </div>
@@ -59,7 +60,7 @@ export default async function AdminFinancialReportsPage() {
                 <li key={cat}>
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">{cat}</span>
-                    <span className="font-bold">{formatMoney(amount)}</span>
+                    <span className="font-bold"><Price cents={amount} /></span>
                   </div>
                   <div className="mt-1 h-2 overflow-hidden rounded-full bg-pastel-pink">
                     <div className="h-full rounded-full bg-rose-gold" style={{ width: `${pct}%` }} />

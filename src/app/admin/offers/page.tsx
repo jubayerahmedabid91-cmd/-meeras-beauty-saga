@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { BadgePercent } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { Badge } from "@/components/badge";
 import { EmptyState } from "@/components/empty-state";
 
@@ -36,11 +37,11 @@ export default async function AdminOffersPage() {
                   <div>
                     <p className="font-semibold">{o.name}</p>
                     <p className="text-xs text-muted">
-                      {formatMoney(o.priceCents - o.discountCents)}{" "}
-                      <span className="line-through">{formatMoney(o.priceCents)}</span>
+                      <Price cents={o.priceCents - o.discountCents} />{" "}
+                      <span className="line-through"><Price cents={o.priceCents} /></span>
                     </p>
                   </div>
-                  <Badge tone="rose">Save {formatMoney(o.discountCents)}</Badge>
+                  <Badge tone="rose">Save <Price cents={o.discountCents} /></Badge>
                 </li>
               ))}
             </ul>
@@ -59,7 +60,7 @@ export default async function AdminOffersPage() {
                 <li key={c.id} className="flex items-center justify-between p-4">
                   <span className="font-mono font-semibold">{c.code}</span>
                   <Badge tone="charcoal">
-                    {c.type === "PERCENT" ? `${c.value}%` : formatMoney(c.value)}
+                    {c.type === "PERCENT" ? `${c.value}%` : <Price cents={c.value} />}
                   </Badge>
                 </li>
               ))}

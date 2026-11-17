@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Calendar, Clock, ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatTime, formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { StatusBadge } from "@/components/badge";
 import { BookingStatusActions } from "@/components/admin/booking-status-actions";
 
@@ -82,7 +83,7 @@ export default async function AdminBookingDetailPage({
               </div>
               <div>
                 <dt className="text-xs text-muted">Total</dt>
-                <dd className="text-lg font-bold text-rose-gold">{formatMoney(booking.totalCents)}</dd>
+                <dd className="text-lg font-bold text-rose-gold"><Price cents={booking.totalCents} /></dd>
               </div>
             </dl>
           </div>
@@ -94,7 +95,7 @@ export default async function AdminBookingDetailPage({
                 {booking.items.map((item) => (
                   <li key={item.id} className="flex items-center justify-between text-sm">
                     <span>{item.name}</span>
-                    <span className="font-semibold">{formatMoney(item.priceCents)}</span>
+                    <span className="font-semibold"><Price cents={item.priceCents} /></span>
                   </li>
                 ))}
               </ul>

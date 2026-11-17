@@ -3,7 +3,9 @@ import Link from "next/link";
 import { Calendar, Clock, MessageCircle, PackageSearch, Search, Sparkles, User } from "lucide-react";
 import { findBookingsByIdentifier, type BookingLookupItem } from "@/lib/booking-lookup";
 import { getWhatsAppDigits } from "@/lib/data";
+import { fillMessage, getWhatsAppMessages, type WhatsAppMessages } from "@/lib/whatsapp";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { Reveal } from "@/components/reveal";
 
 export const metadata: Metadata = {
@@ -75,9 +77,11 @@ function BannerIcon({ kind }: { kind: Banner["icon"] }) {
 function TrackingCard({
   booking,
   whatsappDigits,
+  messages,
 }: {
   booking: BookingLookupItem;
   whatsappDigits: string | null;
+  messages: WhatsAppMessages;
 }) {
   const start = new Date(booking.startsAt);
   const date = start.toLocaleDateString("en-US", {
@@ -90,7 +94,13 @@ function TrackingCard({
   const banner = bannerFor(booking.status);
 
   const waText = encodeURIComponent(
-    `Hello Meera's - The Beauty Saga! I'd like to ask about my booking ${booking.bookingNumber} (${booking.service} on ${date} at ${time}).`,
+    fillMessage(messages.booking, {
+      name: booking.customerName,
+      service: booking.service,
+      date,
+      time,
+      ref: booking.bookingNumber,
+    }),
   );
   const waHref = whatsappDigits
     ? `https://wa.me/${whatsappDigits}?text=${waText}`
@@ -111,7 +121,7 @@ function TrackingCard({
             <p className="mt-1 font-mono text-xs text-muted">Booking ID · {booking.bookingNumber}</p>
           </div>
           <span className="rounded-full bg-pastel-pink px-4 py-1.5 text-sm font-bold text-rose-gold-dark">
-            {formatMoney(booking.totalCents)}
+            <Price cents={booking.totalCents} />
           </span>
         </div>
 
@@ -162,7 +172,11 @@ export default async function TrackBookingPage({
 }) {
   const { q } = await searchParams;
   const query = (q ?? "").trim();
-  const whatsappDigits = await getWhatsAppDigits();
+  const [whatsappDigits, messages] = await Promise.all([
+    getWhatsAppDigits(),
+    getWhatsAppMessages(),
+  ]);
+  const waMessage = encodeURIComponent(messages.default);
 
   let results: BookingLookupItem[] | null = null;
   let error: string | null = null;
@@ -182,10 +196,6 @@ export default async function TrackBookingPage({
       }
     }
   }
-
-  const waMessage = encodeURIComponent(
-    "Hello Meera's - The Beauty Saga! I'd like help tracking my booking.",
-  );
 
   return (
     <>
@@ -250,7 +260,7 @@ export default async function TrackBookingPage({
                 </p>
                 {results.map((b) => (
                   <Reveal key={b.id}>
-                    <TrackingCard booking={b} whatsappDigits={whatsappDigits} />
+                    <TrackingCard booking={b} whatsappDigits={whatsappDigits} messages={messages} />
                   </Reveal>
                 ))}
               </div>

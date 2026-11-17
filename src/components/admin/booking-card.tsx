@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Calendar, Clock } from "lucide-react";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { StatusBadge } from "@/components/badge";
 import { BookingRowActions } from "./booking-row-actions";
 import type { BookingActionData } from "./booking-actions";
@@ -48,7 +49,7 @@ export function BookingCard({
           {booking.time}
         </span>
         <span className="ml-auto text-sm font-bold text-rose-gold-dark">
-          {formatMoney(booking.totalCents)}
+          <Price cents={booking.totalCents} />
         </span>
       </div>
 

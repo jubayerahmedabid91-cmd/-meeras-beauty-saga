@@ -4,6 +4,7 @@ import { Calendar, CalendarDays, History, MessageCircle, Sparkles } from "lucide
 import { safeAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getWhatsAppDigits } from "@/lib/data";
+import { getWhatsAppMessages } from "@/lib/whatsapp";
 import { getBookingsForCustomer, type BookingLookupItem } from "@/lib/booking-lookup";
 import { Reveal } from "@/components/reveal";
 import { BookingLookup, LookupBookingCard } from "@/components/customer/booking-lookup";
@@ -22,7 +23,10 @@ const ACTIVE_STATUSES = ["PENDING", "CONFIRMED", "CHECKED_IN", "IN_PROGRESS", "R
 export default async function CustomerDashboardPage() {
   const session = await safeAuth();
   const role = (session?.user as { role?: string } | undefined)?.role;
-  const whatsappDigits = await getWhatsAppDigits();
+  const [whatsappDigits, waMessages] = await Promise.all([
+    getWhatsAppDigits(),
+    getWhatsAppMessages(),
+  ]);
 
   // ── Signed-in customer: load their bookings ──────────────────────────────
   let bookings: BookingLookupItem[] | null = null;
@@ -46,9 +50,7 @@ export default async function CustomerDashboardPage() {
     (b) => !ACTIVE_STATUSES.includes(b.status) || new Date(b.startsAt) < new Date(),
   );
 
-  const waMessage = encodeURIComponent(
-    "Hello Meera's - The Beauty Saga! I'd like some help with my booking.",
-  );
+  const waMessage = waMessages.booking;
 
   return (
     <section className="pattern-surface py-12 md:py-16">
@@ -86,7 +88,7 @@ export default async function CustomerDashboardPage() {
         {/* ── Not signed in: lookup ── */}
         {bookings === null && (
           <Reveal delay={0.08}>
-            <BookingLookup whatsappDigits={whatsappDigits} />
+            <BookingLookup whatsappDigits={whatsappDigits} message={waMessage} />
             <p className="mt-8 text-center text-sm text-muted">
               Have an account?{" "}
               <Link href="/auth/login" className="font-semibold text-rose-gold hover:underline">
@@ -121,7 +123,7 @@ export default async function CustomerDashboardPage() {
               ) : (
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   {upcoming!.map((b) => (
-                    <LookupBookingCard key={b.id} booking={b} whatsappDigits={whatsappDigits} />
+                    <LookupBookingCard key={b.id} booking={b} whatsappDigits={whatsappDigits} message={waMessage} />
                   ))}
                 </div>
               )}
@@ -141,7 +143,7 @@ export default async function CustomerDashboardPage() {
               ) : (
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   {past!.map((b) => (
-                    <LookupBookingCard key={b.id} booking={b} whatsappDigits={whatsappDigits} />
+                    <LookupBookingCard key={b.id} booking={b} whatsappDigits={whatsappDigits} message={waMessage} />
                   ))}
                 </div>
               )}

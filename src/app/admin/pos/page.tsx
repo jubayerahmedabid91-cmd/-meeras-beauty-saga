@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatMoney } from "@/lib/utils";
+import { Price } from "@/components/price";
 import { Badge } from "@/components/badge";
 import { EmptyState } from "@/components/empty-state";
 
@@ -44,7 +45,7 @@ export default async function AdminPosPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">Today&rsquo;s sales</p>
-          <p className="mt-2 text-2xl font-bold text-rose-gold">{formatMoney(todayTotal)}</p>
+          <p className="mt-2 text-2xl font-bold text-rose-gold"><Price cents={todayTotal} /></p>
         </div>
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">Transactions</p>
@@ -72,7 +73,7 @@ export default async function AdminPosPage() {
                     {new Date(s.createdAt).toLocaleTimeString()} · {s.paymentMethod}
                   </p>
                 </div>
-                <span className="font-bold text-rose-gold">{formatMoney(s.totalCents)}</span>
+                <span className="font-bold text-rose-gold"><Price cents={s.totalCents} /></span>
               </li>
             ))}
           </ul>
@@ -95,7 +96,7 @@ export default async function AdminPosPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Badge tone="charcoal">{p.stockQty} in stock</Badge>
-                  <span className="font-bold text-rose-gold">{formatMoney(p.priceCents)}</span>
+                  <span className="font-bold text-rose-gold"><Price cents={p.priceCents} /></span>
                 </div>
               </li>
             ))}

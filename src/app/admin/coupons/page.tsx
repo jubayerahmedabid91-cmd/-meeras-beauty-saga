@@ -7,7 +7,7 @@ import { Badge } from "@/components/badge";
 import { CouponRowActions } from "@/components/admin/coupon-row-actions";
 import { formatMoney } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Coupons" };
+export const metadata: Metadata = { title: "Coupons / Offers" };
 
 export default async function AdminCouponsPage() {
   const coupons = await prisma.coupon.findMany({ orderBy: { code: "asc" } });
@@ -16,7 +16,7 @@ export default async function AdminCouponsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold md:text-3xl">Coupons</h1>
+          <h1 className="text-2xl font-bold md:text-3xl">Coupons / Offers</h1>
           <p className="mt-1 text-sm text-muted">Discount codes and promotional offers.</p>
         </div>
         <Link href="/admin/coupons/new" className="btn-primary">

@@ -16,7 +16,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   /* Fallbacks so a missing Netlify environment variable degrades to a
      signed-in-as-guest experience instead of crashing the function. */
-  secret: process.env.AUTH_SECRET ?? "meeras-dev-only-secret-change-me-in-production",
+  secret: process.env.AUTH_SECRET ?? "meeras_beauty_secret_2026_bd",
   trustHost: true,
   pages: {
     signIn: "/auth/login",

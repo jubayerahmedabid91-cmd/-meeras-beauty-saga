@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/empty-state";
 import { Badge } from "@/components/badge";
 import { formatMoney } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Customers" };
+export const metadata: Metadata = { title: "Clients (CRM)" };
 
 export default async function AdminCustomersPage({
   searchParams,
@@ -50,7 +50,7 @@ export default async function AdminCustomersPage({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold md:text-3xl">Customers</h1>
+          <h1 className="text-2xl font-bold md:text-3xl">Clients (CRM)</h1>
           <p className="mt-1 text-sm text-muted">All registered customers and their activity.</p>
         </div>
         <form className="relative">

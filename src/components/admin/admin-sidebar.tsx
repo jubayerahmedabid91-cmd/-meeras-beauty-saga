@@ -51,7 +51,7 @@ const NAV: NavGroup[] = [
   {
     title: "People",
     items: [
-      { href: "/admin/customers", label: "Customers", icon: Users },
+      { href: "/admin/customers", label: "Clients (CRM)", icon: Users },
       { href: "/admin/staff", label: "Staff", icon: UserCog },
       { href: "/admin/roles", label: "Roles & Permissions", icon: ShieldCheck },
     ],
@@ -78,7 +78,7 @@ const NAV: NavGroup[] = [
   {
     title: "Marketing",
     items: [
-      { href: "/admin/coupons", label: "Coupons", icon: Ticket },
+      { href: "/admin/coupons", label: "Coupons / Offers", icon: Ticket },
       { href: "/admin/referrals", label: "Referrals", icon: UsersRound },
       { href: "/admin/campaigns", label: "Campaigns", icon: Megaphone },
       { href: "/admin/segments", label: "Customer Segments", icon: Users },

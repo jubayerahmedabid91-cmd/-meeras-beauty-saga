@@ -23,10 +23,12 @@ export function SiteHeader({
   user,
   openingHours,
   logoUrl,
+  logoMobileUrl,
 }: {
   user: { role?: string } | null;
   openingHours?: string;
   logoUrl?: string | null;
+  logoMobileUrl?: string | null;
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -160,7 +162,7 @@ export function SiteHeader({
             style={{ animation: "slide-in-right 0.3s cubic-bezier(0.22,1,0.36,1)" }}
           >
             <div className="flex items-center justify-between border-b border-charcoal/10 p-5">
-              <LogoWordmark compact logoUrl={logoUrl} />
+              <LogoWordmark compact logoUrl={logoMobileUrl || logoUrl} />
               <button
                 type="button"
                 onClick={() => setOpen(false)}

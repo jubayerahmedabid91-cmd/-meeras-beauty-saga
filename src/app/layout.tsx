@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Playfair_Display, DM_Sans } from "next/font/google";
 import "./globals.css";
 import { BRAND } from "@/lib/brand";
+import { getBusinessSetting } from "@/lib/data";
 
 const heading = Playfair_Display({
   subsets: ["latin"],
@@ -52,10 +53,19 @@ export const dynamic = "force-dynamic";
  * `(site)` route group so that `/admin` renders its own dedicated, native-app
  * style shell with NO duplicate headers.
  */
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Owner-selected favicon from the Media Library (Admin -> Media Library).
+  const favicon = await getBusinessSetting<string>("favicon_url", "").catch(() => "");
+
   return (
     <html lang="en" className={`${heading.variable} ${body.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-cream font-body text-charcoal">
+        {favicon ? (
+          // eslint-disable-next-line @next/next/no-head-element
+          <head>
+            <link rel="icon" href={favicon} />
+          </head>
+        ) : null}
         {children}
       </body>
     </html>

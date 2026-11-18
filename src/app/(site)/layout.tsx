@@ -24,7 +24,12 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       >
         Skip to content
       </a>
-      <SiteHeader user={role ? { role } : null} openingHours={salon.openingHours} logoUrl={salon.logoUrl} />
+      <SiteHeader
+        user={role ? { role } : null}
+        openingHours={salon.openingHours}
+        logoUrl={salon.logoUrl}
+        logoMobileUrl={salon.logoMobileUrl}
+      />
       <main id="main-content" className="flex-1">
         {children}
       </main>

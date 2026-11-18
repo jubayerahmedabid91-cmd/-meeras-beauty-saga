@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Settings, Building2, Clock, Globe, Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { BusinessSettingsForm } from "@/components/admin/business-settings-form";
@@ -103,6 +104,14 @@ export default async function AdminSettingsPage() {
             Paste the URL of your logo file (e.g. <span className="font-mono">/assets/logo.png</span>{" "}
             after replacing that file, or an external image URL). Leave empty to use the official
             brand mark.
+          </p>
+          <p className="mt-3 text-xs">
+            <Link
+              href="/admin/website/media"
+              className="font-semibold text-rose-gold underline-offset-2 hover:underline"
+            >
+              Upload a logo from the Media Library →
+            </Link>
           </p>
           <div className="mt-4">
             <BusinessSettingsForm

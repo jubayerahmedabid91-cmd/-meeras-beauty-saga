@@ -48,7 +48,7 @@ export async function SiteFooter() {
       <div className="container-site grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <div className="rounded-2xl bg-white/5 p-4">
-            <LogoMark className="h-11 w-11" logoUrl={salon.logoUrl} />
+            <LogoMark className="h-11 w-11" logoUrl={salon.logoFooterUrl} />
           </div>
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-cream/70">
             A premium beauty salon where every detail is crafted to make you feel radiant. Hair,

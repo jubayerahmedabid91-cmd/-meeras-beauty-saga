@@ -81,12 +81,26 @@ export type SalonProfile = {
   currency: string;
   openingHours: string; // human-readable summary
   logoUrl: string; // "" => use the built-in brand mark
+  logoFooterUrl: string;
+  logoMobileUrl: string;
+  faviconUrl: string;
   social: { instagram: string; facebook: string; youtube: string; tiktok: string };
 };
 
 export const getSalonProfile = cache(async (): Promise<SalonProfile> => {
-  const [address, phone, whatsapp, email, currency, openingHoursRaw, logoUrl, socialRaw] =
-    await Promise.all([
+  const [
+    address,
+    phone,
+    whatsapp,
+    email,
+    currency,
+    openingHoursRaw,
+    logoUrl,
+    logoFooterUrl,
+    logoMobileUrl,
+    faviconUrl,
+    socialRaw,
+  ] = await Promise.all([
       getBusinessSetting<string>("address", BRAND.contact.address),
       getBusinessSetting<string>("phone", BRAND.contact.phone),
       getBusinessSetting<string>("whatsapp", BRAND.contact.whatsapp),
@@ -94,6 +108,9 @@ export const getSalonProfile = cache(async (): Promise<SalonProfile> => {
       getBusinessSetting<string>("currency", "USD"),
       getBusinessSetting<unknown>("opening_hours", null),
       getBusinessSetting<string>("logo_url", ""),
+      getBusinessSetting<string>("logo_footer_url", ""),
+      getBusinessSetting<string>("logo_mobile_url", ""),
+      getBusinessSetting<string>("favicon_url", ""),
       getBusinessSetting<unknown>("social", null),
     ]);
 
@@ -121,6 +138,9 @@ export const getSalonProfile = cache(async (): Promise<SalonProfile> => {
     currency: clean(currency) || "USD",
     openingHours: formatHours(openingHoursRaw),
     logoUrl: clean(logoUrl),
+    logoFooterUrl: clean(logoFooterUrl) || clean(logoUrl),
+    logoMobileUrl: clean(logoMobileUrl) || clean(logoUrl),
+    faviconUrl: clean(faviconUrl),
     social: {
       instagram: socialPart(social.instagram, BRAND.social.instagram),
       facebook: socialPart(social.facebook, BRAND.social.facebook),

@@ -39,6 +39,12 @@ Last update: 2026-11-18
 | Live site | 200 |
 | Live media upload → serve | bytes identical to uploaded file |
 | Live booking with coupon | discount computed and stored (`couponCode` persisted) |
+| Service category filter | 9 services → 1 for `?category=bridal-makeup` |
+| Gallery category filter | `?category=bridal` returns the 3 bridal images |
+| Offers page | 200, no expired promotions rendered |
+| Contact form POST | `{"ok":true}` |
+| Double-booking prevention | capacity 2 → 3rd booking in the same slot rejected with `SLOT_FULL`; availability shows `taken=2, remaining=0, available=false` |
+| Booking tracking privacy | reference only → blocked; wrong phone → nothing; correct phone → details |
 
 ## Modified / added files (this pass)
 

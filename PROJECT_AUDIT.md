@@ -46,6 +46,17 @@ Last commit before this audit: `af8dddd`.
   empty migration."* Re-tested the homepage → "What Our Clients Say" renders.
 - **Status: FIXED & VERIFIED**
 
+### S-1 · Booking tracking exposed by reference alone (High — security)
+- **Where:** `/track-booking` and `/api/customer/bookings/lookup`.
+- **Cause:** a booking reference (`MB-` + 6 time-derived chars + 4 random) was
+  accepted on its own, so anyone who learned a reference could read another
+  customer's name, service, time, price and specialist.
+- **Fix:** the reference must now be supplied together with the phone number or
+  email used for the booking; the lookup filters on both.
+- **Verified:** reference only → blocked; reference + wrong phone → "No
+  bookings"; reference + correct phone → details shown.
+- **Status: FIXED & VERIFIED (locally and live)**
+
 ### H-1 · Plain-string settings were silently ignored (High)
 - **Where:** `getBusinessSetting()` in `src/lib/data.ts`.
 - **Cause:** the admin forms store strings raw (`BDT`, a phone number, an

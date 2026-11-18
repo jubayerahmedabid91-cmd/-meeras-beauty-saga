@@ -7,7 +7,9 @@ import { findBookingsByIdentifier } from "@/lib/booking-lookup";
  * a minimal, non-sensitive projection of the matching bookings.
  */
 export async function GET(request: Request) {
-  const q = new URL(request.url).searchParams.get("q")?.trim() ?? "";
+  const params = new URL(request.url).searchParams;
+  const q = params.get("q")?.trim() ?? "";
+  const id = params.get("id")?.trim() ?? "";
 
   if (!q) {
     return NextResponse.json(
@@ -28,8 +30,17 @@ export async function GET(request: Request) {
     );
   }
 
+  // A booking reference alone is not proof of ownership: the caller must also
+  // supply the phone number or email used for the booking.
+  if (looksLikeBookingNumber && !id) {
+    return NextResponse.json(
+      { error: "Enter the phone number or email used for the booking." },
+      { status: 400 },
+    );
+  }
+
   try {
-    const bookings = await findBookingsByIdentifier(q, 20);
+    const bookings = await findBookingsByIdentifier(q, 20, id || null);
     return NextResponse.json({ bookings });
   } catch {
     return NextResponse.json(

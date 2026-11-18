@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Calendar, Clock, Loader2, MessageCircle, Search, Sparkles } from "lucide-react";
+import { Calendar, Clock, Loader2, MessageCircle, Search, Sparkles, User } from "lucide-react";
 import type { BookingLookupItem } from "@/lib/booking-lookup";
 import { formatMoney } from "@/lib/utils";
 import { fillMessage } from "@/lib/messages";
@@ -110,6 +110,7 @@ export function BookingLookup({
   const currency = useCurrency();
   const money = (cents: number) => formatMoney(cents, currency);
   const [query, setQuery] = useState("");
+  const [identity, setIdentity] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [searched, setSearched] = useState(false);
@@ -122,10 +123,17 @@ export function BookingLookup({
       setError("Please enter your phone number, email or booking ID.");
       return;
     }
+    // A booking reference alone is not proof of ownership.
+    if (/^mb/i.test(trimmed) && !identity.trim()) {
+      setError("Enter the phone number or email used for the booking.");
+      return;
+    }
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`/api/customer/bookings/lookup?q=${encodeURIComponent(trimmed)}`);
+      const url = `/api/customer/bookings/lookup?q=${encodeURIComponent(trimmed)}`
+        + (identity.trim() ? `&id=${encodeURIComponent(identity.trim())}` : "");
+      const res = await fetch(url);
       const data = await res.json();
       if (!res.ok) {
         setError(data.error ?? "Could not find your bookings.");
@@ -144,16 +152,27 @@ export function BookingLookup({
 
   return (
     <div className="w-full">
-      <form onSubmit={lookup} className="mx-auto flex w-full max-w-xl flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
+      <form onSubmit={lookup} className="mx-auto flex w-full max-w-xl flex-col gap-3">
+        <div className="relative">
           <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Phone number, email or booking ID (MB-…)"
+            placeholder="Booking ID (MB-…) or phone number"
+            aria-label="Booking ID or phone number"
             className="field-input !rounded-full !py-3.5 !pl-11"
-            aria-label="Look up bookings"
+          />
+        </div>
+        <div className="relative">
+          <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+          <input
+            type="text"
+            value={identity}
+            onChange={(e) => setIdentity(e.target.value)}
+            placeholder="Phone number or email used for the booking"
+            aria-label="Phone number or email used for the booking"
+            className="field-input !rounded-full !py-3.5 !pl-11"
           />
         </div>
         <button

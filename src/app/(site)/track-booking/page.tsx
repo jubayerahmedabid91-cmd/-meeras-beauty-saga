@@ -168,10 +168,11 @@ function TrackingCard({
 export default async function TrackBookingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; id?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, id } = await searchParams;
   const query = (q ?? "").trim();
+  const identity = (id ?? "").trim();
   const [whatsappDigits, messages] = await Promise.all([
     getWhatsAppDigits(),
     getWhatsAppMessages(),
@@ -187,9 +188,12 @@ export default async function TrackBookingPage({
     const looksLikeBookingNumber = /^mb/i.test(query);
     if (!looksLikeBookingNumber && !looksLikeEmail && digits.length < 8) {
       error = "Please enter a booking ID (e.g. MB-XXXX) or your phone number.";
+    } else if (looksLikeBookingNumber && !identity) {
+      // A booking reference alone is not proof of ownership.
+      error = "Enter the phone number or email used for the booking to confirm it is yours.";
     } else {
       try {
-        results = await findBookingsByIdentifier(query, 20);
+        results = await findBookingsByIdentifier(query, 20, identity || null);
       } catch {
         error = "Something went wrong while searching. Please try again.";
         results = null;
@@ -221,9 +225,9 @@ export default async function TrackBookingPage({
           <Reveal className="mx-auto mt-9 max-w-2xl">
             <form
               action="/track-booking"
-              className="flex flex-col gap-3 rounded-[2rem] border border-white/60 bg-white/70 p-3 shadow-lift backdrop-blur-md sm:flex-row sm:rounded-full"
+              className="flex flex-col gap-3 rounded-[2rem] border border-white/60 bg-white/70 p-3 shadow-lift backdrop-blur-md"
             >
-              <div className="relative flex-1">
+              <div className="relative">
                 <Search className="absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
                 <input
                   name="q"
@@ -234,6 +238,21 @@ export default async function TrackBookingPage({
                   autoComplete="off"
                 />
               </div>
+              <div className="relative">
+                <User className="absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+                <input
+                  name="id"
+                  defaultValue={identity}
+                  placeholder="Phone number or email used for the booking"
+                  className="field-input !border-transparent !bg-transparent !rounded-full !py-3.5 !pl-11 !text-base focus:!ring-0"
+                  aria-label="Phone number or email used for the booking"
+                  autoComplete="off"
+                />
+              </div>
+              <p className="px-3 text-xs text-muted">
+                Your booking ID on its own is not enough — we also check the phone number or email
+                used for the booking.
+              </p>
               <button type="submit" className="btn-primary !rounded-full !py-3.5 sm:!px-9">
                 <Search className="h-4 w-4" />
                 Track Booking

@@ -56,10 +56,16 @@ export function serializeBooking(b: BookingWithRelations): BookingLookupItem {
  * Finds bookings by a free-form identifier: booking number (MB-XXXX), phone
  * number or email. Matching is deliberately lenient on phones — the stored
  * number may carry a country code, so we match on the trailing digits.
+ *
+ * `identity` (a phone number or email) is required whenever the query is a
+ * booking reference. Booking references are short and partly time-derived, so
+ * on their own they are not proof of ownership — without this check anyone who
+ * learns a reference could read another customer's appointment details.
  */
 export async function findBookingsByIdentifier(
   rawQuery: string,
   limit = 20,
+  identity?: string | null,
 ): Promise<BookingLookupItem[]> {
   const query = rawQuery.trim();
   if (!query) return [];
@@ -68,15 +74,34 @@ export async function findBookingsByIdentifier(
   const looksLikeEmail = query.includes("@") && query.includes(".");
   const looksLikeBookingNumber = /^mb[-\s]/i.test(query) || /^mb/i.test(query);
 
+  // Identity constraint: only the customer whose phone or email matches may
+  // read the booking. Applied to every branch so a reference alone is never
+  // enough.
+  const idDigits = (identity ?? "").replace(/\D/g, "");
+  const idEmail = (identity ?? "").trim();
+  const identityFilters: Prisma.BookingWhereInput[] = [];
+  if (idDigits.length >= 8) {
+    identityFilters.push({ customer: { user: { phone: { endsWith: idDigits } } } });
+  }
+  if (idEmail.includes("@") && idEmail.includes(".")) {
+    identityFilters.push({
+      customer: { user: { email: { equals: idEmail, mode: "insensitive" as const } } },
+    });
+  }
+  const withIdentity = (branch: Prisma.BookingWhereInput): Prisma.BookingWhereInput =>
+    identityFilters.length ? { AND: [branch, ...identityFilters] } : branch;
+
   const branches: NonNullable<Prisma.BookingWhereInput["OR"]> = [];
   if (looksLikeBookingNumber || (!looksLikeEmail && digits.length < 8)) {
-    branches.push({ bookingNumber: { equals: query, mode: "insensitive" as const } });
+    branches.push(withIdentity({ bookingNumber: { equals: query, mode: "insensitive" as const } }));
   }
   if (digits.length >= 8) {
-    branches.push({ customer: { user: { phone: { endsWith: digits } } } });
+    branches.push(withIdentity({ customer: { user: { phone: { endsWith: digits } } } }));
   }
   if (looksLikeEmail) {
-    branches.push({ customer: { user: { email: { equals: query, mode: "insensitive" as const } } } });
+    branches.push(
+      withIdentity({ customer: { user: { email: { equals: query, mode: "insensitive" as const } } } }),
+    );
   }
   if (branches.length === 0) return [];
 

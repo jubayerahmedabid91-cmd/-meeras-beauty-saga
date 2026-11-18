@@ -3,12 +3,13 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -53,9 +54,25 @@ export function LoginForm({ callbackUrl }: { callbackUrl?: string }) {
         <label htmlFor="email" className="field-label">Email</label>
         <input id="email" name="email" type="email" required autoComplete="email" className="field-input" placeholder="you@example.com" />
       </div>
-      <div>
+      <div className="relative">
         <label htmlFor="password" className="field-label">Password</label>
-        <input id="password" name="password" type="password" required autoComplete="current-password" className="field-input" placeholder="••••••••" />
+        <input
+          id="password"
+          name="password"
+          type={showPassword ? "text" : "password"}
+          required
+          autoComplete="current-password"
+          className="field-input !pr-11"
+          placeholder="••••••••"
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword((v) => !v)}
+          aria-label={showPassword ? "Hide password" : "Show password"}
+          className="absolute right-2 top-[2.1rem] rounded-lg p-1.5 text-muted transition hover:text-rose-gold"
+        >
+          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
       </div>
 
       {error && (

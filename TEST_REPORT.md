@@ -13,6 +13,9 @@ record was modified or removed.
 
 | Test | Expected | Actual | Result |
 |---|---|---|---|
+| `npm run lint` | exit 0 | exit 0 — **0 errors**, 91 non-blocking warnings (was 10 errors) | ✅ |
+| Dynamic Prisma delete via `?resource=user` | blocked | 400 "Invalid resource" (allowlist added) | ✅ |
+| Login show/hide password control | present | button renders with aria-label | ✅ |
 | `npm run build` | exit 0 | exit 0, 137 routes compiled | ✅ |
 | Schema ↔ database drift | none | `prisma migrate diff` → "empty migration" | ✅ |
 | Import case-sensitivity (Linux build) | 0 mismatches | 0 / 439 imports | ✅ |

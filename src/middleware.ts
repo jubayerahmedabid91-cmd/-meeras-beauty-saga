@@ -32,25 +32,10 @@ export function middleware(req: NextRequest) {
     if (isLoggedIn) {
       const callbackUrl = req.nextUrl.searchParams.get("callbackUrl");
       if (!callbackUrl) {
-        const roleMap: Record<string, string> = {
-          OWNER: "/admin",
-          ADMIN: "/admin",
-          MANAGER: "/admin",
-          RECEPTIONIST: "/admin",
-          STAFF: "/staff",
-          CUSTOMER: "/customer",
-        };
-        let redirectUrl = "/customer";
-        // Extract role from session cookie (JWT payload is not directly accessible here,
-        // so fall back to a generic dashboard for non-customer staff).
-        const role = (req.cookies.get("authjs.session-token")?.value || "") as string;
-        if (role) {
-          // Use the session cookie to determine role (simple heuristic for dev)
-          // In production, use auth() to get the full session.
-        }
-        // For simplicity: always redirect to customer dashboard when logged in
-        // without a callbackUrl. The site header will show the correct menu.
-        return NextResponse.redirect(new URL("/customer", req.url));
+        // The role is not readable from this edge middleware (the Auth.js
+        // session cookie is encrypted), so send the user to the neutral home
+        // page. LoginForm already routes by role after a successful sign-in.
+        return NextResponse.redirect(new URL("/", req.url));
       }
       // Has callbackUrl, let NextAuth handle the login flow
     }

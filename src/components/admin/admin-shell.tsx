@@ -73,11 +73,6 @@ export function AdminShell({
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Close the drawer whenever the route changes.
-  useEffect(() => {
-    setDrawerOpen(false);
-  }, [pathname]);
-
   // Lock body scroll while the drawer is open.
   useEffect(() => {
     if (drawerOpen) {

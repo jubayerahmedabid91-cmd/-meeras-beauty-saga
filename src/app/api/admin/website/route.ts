@@ -110,7 +110,31 @@ export async function DELETE(request: NextRequest) {
 
     if (!id || !resource) return new NextResponse("Missing id or resource", { status: 400 });
 
-    await (prisma as any)[resource].delete({ where: { id } });
+    // Only website-content models may be deleted through this endpoint.
+    // Never build a Prisma delegate from a raw query parameter — an authorised
+    // caller could otherwise delete users, bookings or payments by name.
+    const validResources = ["teamProfile", "testimonial", "contactMessage", "fAQ", "galleryImage"];
+    if (!validResources.includes(resource)) {
+      return new NextResponse("Invalid resource", { status: 400 });
+    }
+
+    switch (resource) {
+      case "teamProfile":
+        await prisma.teamProfile.delete({ where: { id } });
+        break;
+      case "testimonial":
+        await prisma.testimonial.delete({ where: { id } });
+        break;
+      case "contactMessage":
+        await prisma.contactMessage.delete({ where: { id } });
+        break;
+      case "fAQ":
+        await prisma.fAQ.delete({ where: { id } });
+        break;
+      case "galleryImage":
+        await prisma.galleryImage.delete({ where: { id } });
+        break;
+    }
 
     await prisma.auditLog.create({
       data: { userId: session.user.id, action: "DELETE", entity: `website:${resource}`, entityId: id }

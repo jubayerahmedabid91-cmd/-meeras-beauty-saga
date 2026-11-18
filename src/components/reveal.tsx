@@ -28,9 +28,13 @@ export function Reveal({ children, delay = 0, className, y = 24 }: RevealProps) 
     const rect = el.getBoundingClientRect();
     if (rect.top <= window.innerHeight) return;
 
+    // Reset before deciding whether this element should animate in.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVisible(false);
 
     if (typeof IntersectionObserver === "undefined") {
+      // Immediate reveal on browsers without IntersectionObserver.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setVisible(true);
       return;
     }

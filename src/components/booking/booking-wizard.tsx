@@ -76,6 +76,8 @@ export function BookingWizard({
   // per specialist per time slot.
   useEffect(() => {
     if (!date) {
+      // Clearing the derived availability when the date is cleared is intentional.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAvailability(null);
       return;
     }
@@ -122,6 +124,8 @@ export function BookingWizard({
 
   // A different service or package changes the price, so the discount is cleared.
   useEffect(() => {
+    // A new service/package invalidates the previously validated coupon.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCouponDiscount(0);
     setCouponMessage("");
   }, [kind, selectedService, selectedPackage]);

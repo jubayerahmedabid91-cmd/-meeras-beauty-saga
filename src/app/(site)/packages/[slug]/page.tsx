@@ -116,7 +116,7 @@ export default async function PackageDetailPage({ params }: { params: Promise<{ 
               </div>
 
               <div className="card p-6">
-                <h2 className="text-lg font-bold">What's included</h2>
+                <h2 className="text-lg font-bold">What&apos;s included</h2>
                 {pkg.items.length === 0 ? (
                   <p className="mt-3 text-sm text-muted">Package contents will be listed here once configured.</p>
                 ) : (

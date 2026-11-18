@@ -42,10 +42,6 @@ export function SiteHeader({
   }, []);
 
   useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
-  useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
@@ -163,7 +159,7 @@ export function SiteHeader({
               </button>
             </div>
 
-            <nav className="flex-1 overflow-y-auto p-5" aria-label="Mobile">
+            <nav className="flex-1 overflow-y-auto p-5" aria-label="Mobile" onClick={() => setOpen(false)}>
               <ul className="space-y-1">
                 {NAV.map((item) => {
                   const active = pathname === item.href;

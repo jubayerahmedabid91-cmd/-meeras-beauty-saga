@@ -92,7 +92,7 @@ export default async function AdminDashboardPage() {
     }),
     prisma.staff.count({ where: { isActive: true, user: { isActive: true } } }),
     prisma.booking.findMany({
-      where: { bookedAt: { gte: new Date(Date.now() - 13 * 86_400_000) } },
+      where: { bookedAt: { gte: new Date(today.getTime() - 13 * 86_400_000) } },
       select: { bookedAt: true, totalCents: true, status: true },
     }),
     prisma.booking.findMany({
@@ -145,7 +145,7 @@ export default async function AdminDashboardPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold md:text-3xl">Dashboard</h1>
-        <p className="mt-1 text-sm text-muted">Business overview and today's activity.</p>
+        <p className="mt-1 text-sm text-muted">Business overview and today&apos;s activity.</p>
       </div>
 
       {/* ── Needs your attention: pending requests with 1-click actions ── */}

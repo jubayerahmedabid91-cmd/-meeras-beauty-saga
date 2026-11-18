@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Sparkles, Calendar, Star, ShieldCheck, Leaf } from "lucide-react";
+import { ArrowRight, Sparkles, Calendar, Star, ShieldCheck, Leaf, BadgeCheck } from "lucide-react";
 import { LogoMark } from "@/components/logo";
 import { BRAND } from "@/lib/brand";
 import { Reveal } from "@/components/reveal";
@@ -76,7 +76,7 @@ export function Hero({ claims }: { claims: Claims }) {
                 Expert stylists
               </span>
               <span className="flex items-center gap-2">
-                <LogoMark className="h-6 w-6" />
+                <BadgeCheck className="h-4 w-4 text-rose-gold" />
                 Signature looks
               </span>
             </div>
@@ -87,7 +87,7 @@ export function Hero({ claims }: { claims: Claims }) {
           <div className="relative">
             <div className="relative mx-auto aspect-[4/5] max-w-lg overflow-hidden rounded-[2rem] border border-gold/25 bg-pastel-pink shadow-lift">
               <Image
-                src="/assets/web/bridal/image_41c14ae9.jpg"
+                src="/assets/web/bridal/image_d941418.jpg"
                 alt="Bridal beauty look at Meera's - The Beauty Saga"
                 fill
                 priority
